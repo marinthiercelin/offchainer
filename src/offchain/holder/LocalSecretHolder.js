@@ -21,6 +21,10 @@ class LocalSecretHolder{
         return this.web3.personal.unlockAccount(this.config.account, this.config.password);
     }
 
+    getContractInstance(){
+        this.contract.options.address; 
+    }
+
     async deployContract(holder_json){
         this.commitment_pair = this.verifiable_computation.commit(secret_value);
         contractObject = new this.web3.eth.Contract(holder_json.abi);
@@ -53,7 +57,7 @@ class LocalSecretHolder{
         {
             let id = parseInt(data.returnValues.id);
             let input = parseInt(data.returnValues.input);
-            let verifiable_output = this.verifiable_computation.compute(input, secret, this.commitment_pair);
+            let verifiable_output = this.verifiable_computation.computeAndProve(secret, input, this.commitment_pair);
             let answerTx = this.contract.methods.answerRequest(
                 id, 
                 verifiable_output.output, 

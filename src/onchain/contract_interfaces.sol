@@ -22,7 +22,7 @@ contract SecretHolder {
 
     SecretRequester requester;
     bool is_registered;
-    uint id_counter;
+    uint private id_counter;
 
     constructor() public{
         id_counter = 0;
