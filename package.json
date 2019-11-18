@@ -1,0 +1,22 @@
+{
+  "name": "offchainer",
+  "version": "1.0.0",
+  "description": "tools to help build smart contracts interacting with private data. Using verifiable computations offchain.",
+  "main": "src/index.js",
+  "dependencies": {
+    "web3": "^1.2.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "privacy",
+    "smart-contracts",
+    "truffle",
+    "eth",
+    "zero-knowledge"
+  ],
+  "author": "Marin Thiercelin",
+  "license": "ISC"
+}

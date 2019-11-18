@@ -70,5 +70,3 @@ class LocalSecretHolder{
         }
     }
 }
-
-module.exports.LocalSecretHolder = LocalSecretHolder;

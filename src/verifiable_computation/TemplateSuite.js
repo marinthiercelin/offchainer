@@ -1,4 +1,4 @@
-class VerifiableComputationSuite {
+class TemplateSuite {
     constructor(){
         // TODO Make trusted setup if necessary
         // Generate keys and verifier contracts
