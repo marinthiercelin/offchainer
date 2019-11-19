@@ -1,3 +1,5 @@
+// Template to follow for verifiable computation suite :
+// This shows the method that are expected by the secret holder.
 class TemplateSuite {
     constructor(){
         // TODO Make trusted setup if necessary
@@ -16,7 +18,7 @@ class TemplateSuite {
     }
 
     // make the computation and generate a proof of correctness
-    compute(){
+    computeAndProve(secret, input, commitment_pair){
         // TODO implement it
         return {output:0, proof:0}
     }

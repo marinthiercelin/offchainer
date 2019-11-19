@@ -2,7 +2,7 @@
   "name": "offchainer",
   "version": "1.0.0",
   "description": "tools to help build smart contracts interacting with private data. Using verifiable computations offchain.",
-  "main": "src/index.js",
+  "main": "./src/offchain/index.js",
   "dependencies": {
     "web3": "^1.2.4"
   },

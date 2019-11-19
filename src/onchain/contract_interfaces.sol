@@ -65,7 +65,7 @@ contract OnChainSecretHolder is SecretHolder {
 
 contract OffChainSecretHolder is SecretHolder {
     bytes private commitment;
-    bytes private verification_data;
+    bytes public verification_data;
     struct request {
         uint input;
         uint reward;

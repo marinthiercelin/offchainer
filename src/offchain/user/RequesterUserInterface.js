@@ -1,50 +1,47 @@
-const web3Connector = require("../web3/web3Connector");
+const Web3 = require('web3');
 const assert = require('assert');
+
 module.exports = class LocalSecretHolder{
 
-    constructor(config, holder_json, secret, verifiable_computation){
-        this.config = config;
-        this.holder_json = holder_json;
+    constructor(holder_json, address){
         this.secret = secret;
+        this.holder_json = holder_json;
+        this.config = config;
         this.verifiable_computation = verifiable_computation;
-        this.deployed = false;
         this.started = false;
     }
 
-    async deploy(){
-        assert(!this.deployed, "the holder was already deployed");
-        this._connectWeb3();
-        await this._deployContract();
-        this.deployed = true;
-    }
-
-    async start(){
-        assert(this.deployed, "the holder wasn't yet deployed");
-        assert(!this.started, "the holder was already started");
-        await this._deployContract();
-        this._startAnsweringRequests(); 
+    async start(config, holder_json, secret, verifiable_computation){
+        assert(!this.started, "The holder was already started");
+        await this._deployContract(this.holder_json);
         this.started = true;
+        this._startAnsweringRequests(); 
     }
 
     _connectWeb3(){
         this.config.verbose && console.log("Connecting web3");
-        this.web3 = web3Connector.connectWeb3WithWebsocket(this.config.eth_node_address);
+        this.web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${this.config.eth_node_address}`));
     }
 
     async _unlockAccount(){
         this.config.verbose && console.log(`Unlocking account ${this.config.account}`);
         if(this.config.account && typeof this.config.password != "undefined"){
-            await this.web3.eth.personal.unlockAccount(this.config.account, this.config.password, this.config.unlockDuration);
+            await this.web3.eth.personal.unlockAccount(this.config.account, this.config.password);
             return;
         }
         this.config.verbose && console.log("No account or password was provided");
     }
 
-    async _deployContract(){
+    getContractAddress(){
+        assert(this.started, "The holder was not started");
+        return this.contract.options.address;
+    }
+
+    async _deployContract(holder_json){
         this.commitment_pair = this.verifiable_computation.commit(this.secret);
-        let contractObject = new this.web3.eth.Contract(this.holder_json.abi);
+        let contractObject = new this.web3.eth.Contract(holder_json.abi);
         let deploymentTx = contractObject.deploy({
-            data:this.holder_json.bytecode, 
+            data:holder_json.bytecode, 
             arguments:[
                 this.web3.utils.hexToBytes(this.commitment_pair.commitment), 
                 this.web3.utils.hexToBytes(this.verifiable_computation.verificationData())
@@ -58,30 +55,6 @@ module.exports = class LocalSecretHolder{
             value: this.config.deployValue
         });
         this.config.verbose && console.log("Deployed holder contract");
-    }
-
-    getContractAddress(){
-        assert(this.deployed, "The holder was not deployed");
-        return this.contract.options.address;
-    }
-
-    async _deployContract(){
-        this.commitment_pair = this.verifiable_computation.commit(this.secret);
-        let contractObject = new this.web3.eth.Contract(this.holder_json.abi);
-        let deploymentTx = contractObject.deploy({
-            data:this.holder_json.bytecode, 
-            arguments:[
-                this.web3.utils.hexToBytes(this.commitment_pair.commitment), 
-                this.web3.utils.hexToBytes(this.verifiable_computation.verificationData())
-            ]
-        });
-        await this._unlockAccount();
-        this.config.verbose && console.log("Deploying holder contract");
-        this.contract = await deploymentTx.send({
-            from: this.config.account,
-            gas: this.config.maxDeployGas,
-            value: this.config.deployValue
-        });
     }
 
     _startAnsweringRequests(){

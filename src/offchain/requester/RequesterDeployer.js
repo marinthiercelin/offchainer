@@ -18,10 +18,9 @@ module.exports = class LocalSecretHolder{
         this.deployed = true;
     }
 
-    async start(){
+    start(){
         assert(this.deployed, "the holder wasn't yet deployed");
         assert(!this.started, "the holder was already started");
-        await this._deployContract();
         this._startAnsweringRequests(); 
         this.started = true;
     }
@@ -61,15 +60,15 @@ module.exports = class LocalSecretHolder{
     }
 
     getContractAddress(){
-        assert(this.deployed, "The holder was not deployed");
+        assert(this.started, "The holder was not started");
         return this.contract.options.address;
     }
 
-    async _deployContract(){
+    async _deployContract(holder_json){
         this.commitment_pair = this.verifiable_computation.commit(this.secret);
-        let contractObject = new this.web3.eth.Contract(this.holder_json.abi);
+        let contractObject = new this.web3.eth.Contract(holder_json.abi);
         let deploymentTx = contractObject.deploy({
-            data:this.holder_json.bytecode, 
+            data:holder_json.bytecode, 
             arguments:[
                 this.web3.utils.hexToBytes(this.commitment_pair.commitment), 
                 this.web3.utils.hexToBytes(this.verifiable_computation.verificationData())
@@ -82,6 +81,7 @@ module.exports = class LocalSecretHolder{
             gas: this.config.maxDeployGas,
             value: this.config.deployValue
         });
+        this.config.verbose && console.log("Deployed holder contract");
     }
 
     _startAnsweringRequests(){
