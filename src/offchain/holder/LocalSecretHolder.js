@@ -1,5 +1,6 @@
 const web3Connector = require("../web3/web3Connector");
 const assert = require('assert');
+
 module.exports = class LocalSecretHolder{
 
     constructor(config, holder_json, secret, verifiable_computation){
@@ -21,7 +22,6 @@ module.exports = class LocalSecretHolder{
     async start(){
         assert(this.deployed, "the holder wasn't yet deployed");
         assert(!this.started, "the holder was already started");
-        await this._deployContract();
         this._startAnsweringRequests(); 
         this.started = true;
     }
@@ -57,31 +57,11 @@ module.exports = class LocalSecretHolder{
             gas: this.config.maxDeployGas,
             value: this.config.deployValue
         });
-        this.config.verbose && console.log("Deployed holder contract");
     }
 
     getContractAddress(){
         assert(this.deployed, "The holder was not deployed");
         return this.contract.options.address;
-    }
-
-    async _deployContract(){
-        this.commitment_pair = this.verifiable_computation.commit(this.secret);
-        let contractObject = new this.web3.eth.Contract(this.holder_json.abi);
-        let deploymentTx = contractObject.deploy({
-            data:this.holder_json.bytecode, 
-            arguments:[
-                this.web3.utils.hexToBytes(this.commitment_pair.commitment), 
-                this.web3.utils.hexToBytes(this.verifiable_computation.verificationData())
-            ]
-        });
-        await this._unlockAccount();
-        this.config.verbose && console.log("Deploying holder contract");
-        this.contract = await deploymentTx.send({
-            from: this.config.account,
-            gas: this.config.maxDeployGas,
-            value: this.config.deployValue
-        });
     }
 
     _startAnsweringRequests(){
