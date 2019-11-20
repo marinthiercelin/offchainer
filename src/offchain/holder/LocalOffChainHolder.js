@@ -1,66 +1,46 @@
 const web3Connector = require("../web3/web3Connector");
 const assert = require('assert');
+const OffChainHolderDeployer = require('./OffChainHolderDeployer');
 
-module.exports = class LocalSecretHolder{
+module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedClass {
 
-    constructor(config, holder_json, secret, verifiable_computation){
+    constructor(config, holder_contract_json, secret, verifiable_computation){
+        super(config);
         this.config = config;
-        this.holder_json = holder_json;
+        this.holder_contract_json = holder_contract_json;
         this.secret = secret;
         this.verifiable_computation = verifiable_computation;
-        this.deployed = false;
+        this.connected = false;
         this.started = false;
     }
 
     async deploy(){
-        assert(!this.deployed, "the holder was already deployed");
-        this._connectWeb3();
-        await this._deployContract();
-        this.deployed = true;
+        assert(!this.connected, "the holder was already connected to a contract");
+        let commitment_pair = this.verifiable_computation.commit(this.secret);
+        let verification_data = this.verifiable_computation.verificationData();
+        let deployer = new OffChainHolderDeployer(this.config);
+        await deployer.deploy(this.holder_contract_json, commitment_pair.commitment, verification_data);
+        let address = deployer.getContractAddress();
+        await this.connect(address, commitment_pair);
+    }
+
+    async connect(address, commitment_pair){
+        assert(!this.connected, "the holder was already connected to a contract");
+        this.commitment_pair = commitment_pair;
+        this._connectWeb3Ws();
+        this.contract = new this.web3.eth.Contract(this.holder_contract_json.abi, address);
+        this.connected = true;
     }
 
     async start(){
-        assert(this.deployed, "the holder wasn't yet deployed");
+        assert(this.connected, "the holder wasn't connected to a contract");
         assert(!this.started, "the holder was already started");
         this._startAnsweringRequests(); 
         this.started = true;
     }
 
-    _connectWeb3(){
-        this.config.verbose && console.log("Connecting web3");
-        this.web3 = web3Connector.connectWeb3WithWebsocket(this.config.eth_node_address);
-    }
-
-    async _unlockAccount(){
-        this.config.verbose && console.log(`Unlocking account ${this.config.account}`);
-        if(this.config.account && typeof this.config.password != "undefined"){
-            await this.web3.eth.personal.unlockAccount(this.config.account, this.config.password, this.config.unlockDuration);
-            return;
-        }
-        this.config.verbose && console.log("No account or password was provided");
-    }
-
-    async _deployContract(){
-        this.commitment_pair = this.verifiable_computation.commit(this.secret);
-        let contractObject = new this.web3.eth.Contract(this.holder_json.abi);
-        let deploymentTx = contractObject.deploy({
-            data:this.holder_json.bytecode, 
-            arguments:[
-                this.web3.utils.hexToBytes(this.commitment_pair.commitment), 
-                this.web3.utils.hexToBytes(this.verifiable_computation.verificationData())
-            ]
-        });
-        await this._unlockAccount();
-        this.config.verbose && console.log("Deploying holder contract");
-        this.contract = await deploymentTx.send({
-            from: this.config.account,
-            gas: this.config.maxDeployGas,
-            value: this.config.deployValue
-        });
-    }
-
     getContractAddress(){
-        assert(this.deployed, "The holder was not deployed");
+        assert(this.connected, "The holder wasn't connected to a contract");
         return this.contract.options.address;
     }
 
@@ -68,7 +48,7 @@ module.exports = class LocalSecretHolder{
         this.subscription = this.contract.events.NewRequest()
         .on("data", this._answerRequest.bind(this))
         .on("error", console.error);
-        this.config.verbose && console.log("Started listening to holder events");
+        this.config.verbose && console.log("Started listening to holder contract events");
     }
 
     _answerRequest(data){
@@ -97,6 +77,7 @@ module.exports = class LocalSecretHolder{
                 answerTx.send({
                     from: this.config.account,
                     gas: this.config.maxAnswerGas,
+                    gasPrice: this.config.answerGasPrice,
                     value: this.config.answerValue
                 })
                 .on("error", console.error)

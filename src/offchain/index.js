@@ -1,7 +1,16 @@
-var LocalSecretHolder = require('./holder/LocalSecretHolder');
+var LocalOffChainHolder = require('./holder/LocalOffChainHolder');
+var OffChainHolderDeployer = require('./holder/LocalOffChainHolder');
+var RequesterDeployer = require('./requester/RequesterDeployer');
+var RequesterUI = require('./requester/RequesterUI');
 var UnverifiedComputationSuite =  require('./verifiable_computation/UnverifiedComputationSuite');
 
-module.exports.LocalSecretHolder = LocalSecretHolder;
-module.exports.verifiable_computation = {
-    UnverifiedComputationSuite:UnverifiedComputationSuite,
-};
+module.exports.holder = {};
+module.exports.holder.LocalOffChainHolder = LocalOffChainHolder;
+module.exports.holder.OffChainHolderDeployer = OffChainHolderDeployer;
+
+module.exports.requester = {};
+module.exports.requester.RequesterDeployer = RequesterDeployer;
+module.exports.requester.RequesterUI = RequesterUI;
+
+module.exports.verifiable_computation = {};
+module.exports.verifiable_computation.UnverifiedComputationSuite = UnverifiedComputationSuite;
