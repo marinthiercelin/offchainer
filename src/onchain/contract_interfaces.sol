@@ -64,8 +64,6 @@ contract OnChainSecretHolder is SecretHolder {
 }
 
 contract OffChainSecretHolder is SecretHolder {
-    bytes private commitment;
-    bytes public verification_data;
     struct request {
         uint input;
         uint reward;
@@ -74,11 +72,6 @@ contract OffChainSecretHolder is SecretHolder {
     mapping(uint => request) private requests;
     event NewRequest(uint id, uint input, uint reward);
     event NewAnswer(uint id, uint input, uint output);
-
-    constructor(bytes memory commitment_value, bytes memory verification_data_value) public{
-        commitment = commitment_value;
-        verification_data = verification_data_value;
-    }
 
     function makeComputation(uint id, uint input) internal {
         requests[id] = request(input, msg.value, true);

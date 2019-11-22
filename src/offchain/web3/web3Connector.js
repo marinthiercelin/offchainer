@@ -19,12 +19,4 @@ module.exports.web3ConnectedClass = class {
         this.config.verbose && console.log("Connecting web3 with http");
         this.web3 = module.exports.connectWeb3WithHttp(this.config.eth_node_address);
     }
-    async _unlockAccount(){
-        this.config.verbose && console.log(`Unlocking account ${this.config.account}`);
-        if(this.config.account && typeof this.config.password !== "undefined"){
-            await this.web3.eth.personal.unlockAccount(this.config.account, this.config.password, this.config.unlockDuration);
-            return;
-        }
-        this.config.verbose && console.log("No account or password was provided");
-    }
 }

@@ -1,3 +1,4 @@
+const Web3 = require('web3');
 // Class that makes a computation and doesn't provide any verification
 module.exports = class UnverifiedComputationSuite {
 
@@ -9,22 +10,19 @@ module.exports = class UnverifiedComputationSuite {
         this.computeOutput = computeOutput
     }
 
-    // Cryptographic commitment
-    commit(value){
-        // we don't commit to anything
-        return {commitment:"0x00000000000000000000000000000000", key:"0x00000000000000000000000000000000"}
-    }
-
-    verificationData(){
-        // no veification is performed
-        return "0x00000000000000000000000000000000"
+    verificationData(secret){
+        // no verification is performed
+        return {
+            verifier_material : [],
+            prover_material: {}
+        }
     }
 
     // make the computation and generate a proof of correctness
-    computeAndProve(secret, input, commitment_pair){
+    async computeAndProve(secret, input, prover_material){
         // Here we use the method that will be provided by the user
         // And we don't compute any proof since it
-        return {output:this.computeOutput(secret, input), proof:"0x00000000000000000000000000000000"}
+        return {output:this.computeOutput(secret, input), proof:Web3.utils.hexToBytes('0x00')}
     }
 
 }

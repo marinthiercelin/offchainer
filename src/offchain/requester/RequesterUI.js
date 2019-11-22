@@ -34,16 +34,20 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
     }
 
     _makeOutputPromise(method_info, send_options, transaction){
-        return this._unlockAccount().then(()=>{
+        return this.web3.eth.personal.unlockAccount(send_options.account, send_options.password, send_options.unlockDuration)
+        .then(()=>{
             return new Promise((resolve, reject) => {
                 this.config.verbose && console.log(`Sending transaction for ${method_info.name} (with offchain)`);
                 if(method_info.timeout > 0){
                     this.config.verbose && console.log(`Setting a timeout of ${method_info.timeout}ms`);
                     setTimeout(() => reject("Timeout!"), method_info.timeout)
                 }
-                transaction.send(
-                    {...send_options, from: this.config.account}
-                )
+                transaction.send({
+                    from: send_options.account,
+                    gas: send_options.gas,
+                    gasPrice: send_options.gasPrice,
+                    value: send_options.value
+                })
                 .on("receipt", this._dealWithReceiptCallBack(method_info, resolve, reject))
                 .on("confirmation", this._dealWithConfirmationCallBack(method_info, resolve, reject))
                 .on("error", (e) => reject(e));

@@ -3,7 +3,6 @@ const web3Connector = require("../web3/web3Connector");
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const bigInt = require("big-integer");
 
 /**
  * Class that uses the Zokrates library 
@@ -29,14 +28,13 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         this.build_directory = build_directory;
         this.zokrates_filepath = zokrates_filepath;
         this.output_prefix = path.basename(zokrates_filepath, '.zok');
-        this.modified_zokrates_file = `${this.build_directory}/${this.output_prefix}_with_commitment.zok`;
-        this.commitment_scheme.addCommitmentToZokrates(zokrates_filepath, this.modified_zokrates_file);
         if (!fs.existsSync(this.build_directory)){
             fs.mkdirSync(this.build_directory);
         }
+        this.modified_zokrates_file = `${this.build_directory}/${this.output_prefix}_with_commitment.zok`;
+        this.commitment_scheme.addCommitmentToZokrates(zokrates_filepath, this.modified_zokrates_file);
         this.compiled_file = `${this.build_directory}/${this.output_prefix}`;
-        // let compile_cmd = `zokrates compile --light -i ${this.modified_zokrates_file} -o ${this.compiled_file};`;
-        let compile_cmd = `zokrates compile --light -i ${this.zokrates_filepath} -o ${this.compiled_file};`;
+        let compile_cmd = `zokrates compile --light -i ${this.modified_zokrates_file} -o ${this.compiled_file};`;
         await this._exec_command(compile_cmd);
         this.verification_key_file = `${this.build_directory}/${this.output_prefix}_verification.key`;
         this.proving_key_file = `${this.build_directory}/${this.output_prefix}_proving.key`;
@@ -45,7 +43,7 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         this.was_setup = true;
     }
 
-    async deployVerifierContract(){
+    async deployVerifierContract(deploy_options){
         assert(this.was_setup, "the suite wasn't set up");
         assert(!this.deployed, "the verifier contract was already deployed");
         let verifier_contract_file = `${this.build_directory}/${this.output_prefix}_verifier.sol`;
@@ -61,11 +59,11 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         let BN256G2ContractTx = BN256G2ContractObject.deploy({
             data:BN256G2_bin
         });
-        this._unlockAccount();
+        await this.web3.eth.personal.unlockAccount(deploy_options.account, deploy_options.password, deploy_options.unlockDuration);
         let BN256G2ContractInstance = await BN256G2ContractTx.send({
-            from:this.config.account,
-            gas: this.config.gas,
-            gasPrice: this.config.gasPrice,
+            from: deploy_options.account,
+            gas: deploy_options.gas,
+            gasPrice: deploy_options.gasPrice,
         });
         let BN256G2ContractAddress = BN256G2ContractInstance.options.address;
         let link_BN256G2_cmd = `solc ${verifier_contract_file} --overwrite --libraries BN256G2:${BN256G2ContractAddress} --bin -o ${this.build_directory}`;
@@ -75,11 +73,11 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         let Pairing_bin = fs.readFileSync(`${this.build_directory}/Pairing.bin`);
         let PairingContractObject = new this.web3.eth.Contract(Pairing_abi);
         let PairingContractTx = PairingContractObject.deploy({data:Pairing_bin});
-        await this._unlockAccount();
+        await this.web3.eth.personal.unlockAccount(deploy_options.account, deploy_options.password, deploy_options.unlockDuration);
         let PairingContractInstance = await PairingContractTx.send({
-            from:this.config.account,
-            gas: this.config.gas,
-            gasPrice: this.config.gasPrice,
+            from: deploy_options.account,
+            gas: deploy_options.gas,
+            gasPrice: deploy_options.gasPrice,
         });
         let PairingContractAddress = PairingContractInstance.options.address;
         let link_pairing_cmd = `solc ${verifier_contract_file} --overwrite --libraries Pairing:${PairingContractAddress} --bin -o ${this.build_directory}`;
@@ -89,11 +87,11 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         let Verifier_bin = fs.readFileSync(`${this.build_directory}/Verifier.bin`);
         let VerifierContractObject = new this.web3.eth.Contract(Verifier_abi);
         let VerifierContractTx = VerifierContractObject.deploy({data: Verifier_bin});
-        await this._unlockAccount();
+        await this.web3.eth.personal.unlockAccount(deploy_options.account, deploy_options.password, deploy_options.unlockDuration);
         let VerifierContractInstance = await VerifierContractTx.send({
-            from:this.config.account,
-            gas: this.config.gas,
-            gasPrice: this.config.gasPrice,
+            from: deploy_options.account,
+            gas: deploy_options.gas,
+            gasPrice: deploy_options.gasPrice,
         });
         this.verifier_address = VerifierContractInstance.options.address;
         this.deployed = true;
@@ -127,26 +125,71 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         this.deployed = true;
     }
 
+
     /**
-     * @param {int} value value to commit to
+     * @param {int} value value to commit to, max 128bits to work with Zokrates.
      */
-    commit(value){
+    _commit(value){
         assert(this.was_setup, "the suite wasn't set up");
         assert(this.deployed, "the verifier contract wasn't deployed");
-        return this.commitment_scheme.commit(bigInt(value));
+        return this.commitment_scheme.commit(BigInt(value).toString(16));
     }
 
-    verificationData(){
+    verificationData(secret){
         assert(this.was_setup, "the suite wasn't set up");
         assert(this.deployed, "the verifier contract wasn't deployed");
-        return this.verifier_address;
+        let commitment_pair = this._commit(secret);
+        console.log(commitment_pair);
+        let commitment_ints = this._hexToBigIntArray(commitment_pair.commitment, 2);
+        let key_ints = this._hexToBigIntArray(commitment_pair.key, 3);
+        return {
+            verifier_material : [commitment_ints, this.verifier_address],
+            prover_material: {commitment:commitment_ints, key:key_ints}
+        }
     }
+
+    _hexToBigIntArray(hexstr, divide_in){
+        if(hexstr[0]==='0' && hexstr==='x'){
+            hexstr = hexstr.substring(2);
+        }
+        if(hexstr.length % divide_in !== 0){
+            throw "Cannot divide the hex_str equally";
+        }
+        let bigIntLen = hexstr.length/divide_in;
+        let indexes = [...Array(divide_in).keys()];
+        let substrings = indexes.map(i => '0x'+hexstr.substring(i*bigIntLen, (i+1)*bigIntLen));
+        console.log(substrings);
+        let result = substrings.map(str => BigInt(str));
+        return result;
+    }
+
 
     // make the computation and generate a proof of correctness
-    computeAndProve(secret, input, commitment_pair){
+    async computeAndProve(secret, input, prover_material){
         assert(this.was_setup, "the suite wasn't set up");
         assert(this.deployed, "the verifier contract wasn't deployed");
-        return {output:this.computeOutput(secret, input), proof:"0x00000000000000000000000000000000"}
+        let key = prover_material.key;
+        let comm = prover_material.commitment;
+        let witness_file = `${this.build_directory}/${this.output_prefix}_witness`;
+        let witness_cmd = 
+        `zokrates compute-witness --light `+
+            `-i ${this.compiled_file} -o ${witness_file} `+
+            `-a ${secret} ${input} `+
+            `${key[0]} ${key[1]} ${key[2]} `+
+            `${comm[0]} ${comm[1]}`;
+        await this._exec_command(witness_cmd);
+        let proof_file = `${this.build_directory}/${this.output_prefix}_proof.json`;
+        let proof_cmd = `zokrates generate-proof `+
+        `-i ${this.compiled_file} `+
+        `-w ${witness_file} `+
+        `-p ${this.proving_key_file} `+
+        `-j ${proof_file}`;
+        await this._exec_command(proof_cmd);
+        let proof_json = JSON.parse(fs.readFileSync(proof_file));
+        let input_len = proof_json.inputs.length;
+        let output_hex = proof_json.inputs[input_len-1];
+        let output = BigInt(output_hex);
+        return {output:Number(output), proof: this.web3.utils.hexToBytes('0x00')};
     }
 
 }

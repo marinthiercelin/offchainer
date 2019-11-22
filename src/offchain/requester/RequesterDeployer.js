@@ -11,7 +11,7 @@ module.exports = class RequesterDeployer extends web3Connector.web3ConnectedClas
         this.deployed = false;
     }
 
-    async deploy(){
+    async deploy(deploy_options){
         assert(!this.deployed, "the requester was already deployed");
         this._connectWeb3Http();
         let contractObject = new this.web3.eth.Contract(this.requester_contract_json.abi);
@@ -21,12 +21,13 @@ module.exports = class RequesterDeployer extends web3Connector.web3ConnectedClas
                 this.holder_address,
             ]
         });
-        await this._unlockAccount();
+        await this.web3.eth.personal.unlockAccount(deploy_options.account, deploy_options.password, deploy_options.unlockDuration);
         this.config.verbose && console.log("deploying requester contract");
         this.contract = await deploymentTx.send({
-            from: this.config.account,
-            gas: this.config.maxDeployGas,
-            value: this.config.deployValue
+            from: deploy_options.account,
+            gas: deploy_options.gas,
+            gasPrice: deploy_options.gasPrice,
+            value: deploy_options.value
         });
         this.deployed = true;
     }
