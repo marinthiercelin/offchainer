@@ -71,7 +71,6 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                     )
                 )
                 .then( verifiable_output  => {
-                    console.log(verifiable_output);
                     if(this.config.verbose){
                         console.log(`Answering a request id: ${id} input: ${input} output: ${verifiable_output.output}`);
                     }
@@ -86,7 +85,7 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                         gasPrice: answer_options.gasPrice,
                         value: answer_options.value
                     })
-                    .on("error", console.error)
+                    .on("error", console.error);
                 });
             }
         }

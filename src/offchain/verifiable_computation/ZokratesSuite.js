@@ -110,11 +110,15 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         });
     }
 
-    usePastSetup(compiled_file, proving_key_file, verification_key_file){
+    usePastSetup(zokrates_filepath, build_directory){
         assert(!this.was_setup, "the suite was already set up");
-        this.compiled_file = compiled_file;
-        this.proving_key_file = proving_key_file;
-        this.verification_key_file = verification_key_file;
+        this.build_directory = build_directory;
+        this.zokrates_filepath = zokrates_filepath;
+        this.output_prefix = path.basename(zokrates_filepath, '.zok');
+        this.modified_zokrates_file = `${this.build_directory}/${this.output_prefix}_with_commitment.zok`;
+        this.compiled_file = `${this.build_directory}/${this.output_prefix}`;
+        this.verification_key_file = `${this.build_directory}/${this.output_prefix}_verification.key`;
+        this.proving_key_file = `${this.build_directory}/${this.output_prefix}_proving.key`;
         this.was_setup = true;
     }
 
@@ -123,6 +127,14 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         assert(!this.deployed, "the verifier contract was already deployed");
         this.verifier_address = address;
         this.deployed = true;
+    }
+
+    usePastVerifierContract(address){
+        assert(this.was_setup, "the suite wasn't set up");
+        assert(!this.deployed, "the verifier contract was already deployed");
+        this.verifier_address = address;
+        this.deployed = true;
+        return this.verifier_address;
     }
 
 
@@ -139,11 +151,11 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         assert(this.was_setup, "the suite wasn't set up");
         assert(this.deployed, "the verifier contract wasn't deployed");
         let commitment_pair = this._commit(secret);
-        console.log(commitment_pair);
         let commitment_ints = this._hexToBigIntArray(commitment_pair.commitment, 2);
+        let commitment_bns = commitment_ints.map(x => x.toString());
         let key_ints = this._hexToBigIntArray(commitment_pair.key, 3);
         return {
-            verifier_material : [commitment_ints, this.verifier_address],
+            verifier_material : [commitment_bns, this.verifier_address],
             prover_material: {commitment:commitment_ints, key:key_ints}
         }
     }
@@ -158,7 +170,6 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         let bigIntLen = hexstr.length/divide_in;
         let indexes = [...Array(divide_in).keys()];
         let substrings = indexes.map(i => '0x'+hexstr.substring(i*bigIntLen, (i+1)*bigIntLen));
-        console.log(substrings);
         let result = substrings.map(str => BigInt(str));
         return result;
     }
@@ -188,8 +199,33 @@ module.exports = class ZokratesSuite extends web3Connector.web3ConnectedClass {
         let proof_json = JSON.parse(fs.readFileSync(proof_file));
         let input_len = proof_json.inputs.length;
         let output_hex = proof_json.inputs[input_len-1];
-        let output = BigInt(output_hex);
-        return {output:Number(output), proof: this.web3.utils.hexToBytes('0x00')};
+        let output = this.web3.utils.toBN(output_hex).toString();
+        let a = proof_json.proof.a;
+        let b = proof_json.proof.b;
+        let c = proof_json.proof.c;
+        let toOneHex = (list) => list.flat().map(x => x.substring(2)).reduce((a,b)=>a+b); 
+        let proof_hex = "0x" + toOneHex(a) + toOneHex(b) + toOneHex(c);
+        let check_proof = await this.verifyProof(proof_file);
+        console.log(`The proof check returned ${check_proof}`);
+        return {output:output, proof: this.web3.utils.hexToBytes(proof_hex)};
+    }
+
+    async verifyProof(proof_file){
+        let Verifier_abi = JSON.parse(fs.readFileSync(`${this.build_directory}/Verifier.abi`));
+        this._connectWeb3Http();
+        let verifier_instance = await new this.web3.eth.Contract(Verifier_abi, this.verifier_address);
+        let proof_json = JSON.parse(fs.readFileSync(proof_file));
+        // proof_json.inputs[proof_json.inputs.length -1] = "0x0000000000000000000000000000000000000000000000000000000000000011"
+        let checkTx = verifier_instance.methods.verifyTx(
+            proof_json.proof.a, 
+            proof_json.proof.b, 
+            proof_json.proof.c, 
+            proof_json.inputs
+        );
+        console.log(checkTx);
+        console.log(this.web3.utils.sha3(`verifyTx(uint256[2],uint256[2][2],uint256[2],uint256[4])`).substr(0, 10));
+        let check_result = await checkTx.call();
+        return check_result;
     }
 
 }

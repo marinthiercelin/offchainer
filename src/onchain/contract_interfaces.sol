@@ -80,10 +80,12 @@ contract OffChainSecretHolder is SecretHolder {
 
     function answerRequest(uint id, uint output, bytes memory proof) public{
         require(requests[id].active, "The answer wasn't needed");
-        require(verifyProof(requests[id].input, output, proof), "The proof was incorrect");
+        bool check = verifyProof(requests[id].input, output, proof);
+        require(check, "The proof was incorrect");
         emit NewAnswer(id, requests[id].input, output);
-        requester.callback(id, output);
         msg.sender.transfer(requests[id].reward);
+        bytes memory payload = abi.encodeWithSignature("callback(uint256,uint256)", id, output);
+        address(requester).call(payload);
     }
 
     function verifyProof(uint input, uint output, bytes memory proof) internal returns (bool);

@@ -22,7 +22,7 @@ module.exports = class UnverifiedComputationSuite {
     async computeAndProve(secret, input, prover_material){
         // Here we use the method that will be provided by the user
         // And we don't compute any proof since it
-        return {output:this.computeOutput(secret, input), proof:Web3.utils.hexToBytes('0x00')}
+        return {output:this.computeOutput(secret, input), proof:[]}
     }
 
 }
