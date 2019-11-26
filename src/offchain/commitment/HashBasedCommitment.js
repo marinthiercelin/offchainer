@@ -1,9 +1,14 @@
 const crypto = require('crypto');
 const fs = require('fs');
-
 /**
+ * Defines a commitment scheme
+ * This is a hash based commitment using SHA256
+ * Where Comm: {0,1}^128 -> {0,1}^384 x {0,1}^256 
+ * Comm(x) = (key <- Uniform({0,1}^384), comm := SHA56(x|key))
+ * ! This is only secure in the Random oracle model 
  * 
  * @param {string} value hex string of a 128bit value
+ * @returns {Object} an object with a commitment field and a key field.
  */
 function commit(value){
     var buffer = Buffer.alloc(16);
@@ -13,9 +18,19 @@ function commit(value){
     const hash = crypto.createHash('sha256');
     hash.update(buffer);
     var digest = hash.digest('hex');
-    return {commitment:digest , key:random_number.toString('hex')}
+    return {commitment:digest , key:random_number.toString('hex')};
 }
 
+/**
+ * This function takes a Zokrates file,
+ * that defines a function f, taking as arguments one secret field input and a public field input
+ * and returns a field output.
+ * And produces a new zokrates file, that additionaly takes a public array of 2 fields, the commitment,
+ * and a private array of 3 fields, the key, 
+ * and checks that commitment0|commitment1 = SHA256(input|key0|key1|key2).
+ * @param {string} zokrates_filepath the absolute path to the original zokrates file
+ * @param {string} modified_filepath the absolute path of the file that will be generated
+ */
 function addCommitmentToZokrates(zokrates_filepath, modified_filepath){
     let original_content = fs.readFileSync(zokrates_filepath, 'utf8');
     let main_start_regex = / *def *main *\( *private *field *secret_input *, *field *public_input *\) *-> *\( *field *\) *: *\n/;

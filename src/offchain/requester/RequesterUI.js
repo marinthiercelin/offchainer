@@ -1,27 +1,62 @@
 const web3Connector = require("../web3/web3Connector");
 const assert = require('assert');
 
+/**
+ * This class takes an address of a requester contract, that make requests to an offchain holder.
+ * The class can be used to emulate the case where all computations is done onchain.
+ */
 module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
 
-    constructor(config, requester_contract_json){
+    /**
+     * 
+     * @param {{node_address:string, verbose:bool}} config 
+     *  the node_address field should be set to the address and port of the ethereum node interface.
+     *  the verbose field should be set to true if status messages need to be printed. 
+     */
+    constructor(config){
         super(config);
         this.config = config;
-        this.requester_contract_json = requester_contract_json;
         this.connected = false;
     }
 
-    async connect(address){
+    /**
+     * Connects the class to the requester contract
+     * @param {string} address the address of the deployed contract
+     * @param {Object} requester_contract_abi the ABI of the deployed contract
+     */
+    async connect(address, requester_contract_abi){
         assert(!this.connected, "the ui was already connected to a contract");
         this._connectWeb3Ws();
-        this.contract = new this.web3.eth.Contract(this.requester_contract_json.abi, address);
+        this.contract = new this.web3.eth.Contract(requester_contract_abi, address);
         this.connected = true;
     }
 
+    /**
+     * Returns the address of the contract
+     */
     getContractAddress(){
         assert(this.connected, "The ui wasn't connected to a contract");
         return this.contract.options.address;
     }
 
+    /**
+     * This is the method that calls a contract method requiring offchain computation from the holder
+     * and emulates it in such a way, that the user can receive the output as if it had been performed onchain
+     * @param {{name:string, input_event:string, output_event:string, block_timeout:Number, timeout:Number}} method_info The information of the method to call
+     * fields:
+     *  name - the name of the method to call (as from the ABI)
+     *  input_event - the name of the event that is emitted by the method called, this event should contain an id field
+     *  output_event - the name of the event that is emitted when the logical computation completed 
+     *      (after the holder answered the request), 
+     *      this event should have field id corresponding to the one given in the input_event, 
+     *      and contain all the ouptuts useful to the user.
+     *  block_timeout (optional) - the returned Promise is rejected if the output event hasn't been emitted after block_timeout blocks have been mined.
+     *  timeout (optional) - the returned Promise is rejected if the output event hasn't been emitted after timeout ms.
+     * @param {{from:string, password:string, unlockDuration:int, gas:Number, gasPrice:Number, value:Number}} send_options 
+     * should contain the account and password to be used for the call transaction
+     * also optionally the gas, gasPrice and value used for the transaction.
+     * @param  {...any} args Any arguments that should be given to the method called.
+     */
     useMethodWithOffChainRequest(method_info, send_options, ...args){
         assert(this.connected, "The ui wasn't connected to a contract");
         this.config.verbose && console.log(`Calling ${method_info.name} (with offchain)`);

@@ -1,28 +1,35 @@
-const Web3 = require('web3');
-// Class that makes a computation and doesn't provide any verification
-module.exports = class UnverifiedComputationSuite {
+const AbstractSuite = require('./AbstractSuite');
+
+/**
+ * Class that performs the computation without giving any kind of way to verify correctness.
+ * Meant has a first step toward offchain verifiable computation
+ * Should be used with the src/onchain/implementations/unverified_holder.sol holder contract.
+ */
+module.exports = class UnverifiedComputationSuite extends AbstractSuite {
 
     /**
-     * 
-     * @param {(int, int) => int} computeOutput the computation to realize offchain
+     * Constructor of the class
+     * @param {Number} secret the input of the computation that stays secret and offchain
+     * @param {(secret_input:Number, public_input:Number) => Number} computeOutput the computation to run for each request
      */
-    constructor(computeOutput){
-        this.computeOutput = computeOutput
+    constructor(secret, computeOutput){
+        super(secret);
+        this.computeOutput = computeOutput;
     }
 
-    verificationData(secret){
-        // no verification is performed
-        return {
-            verifier_material : [],
-            prover_material: {}
-        }
+    /**
+     * Returns the arguments that should be given when deploying the holder contract.
+     */
+    getHolderContractArgs(){
+        return [];
     }
 
-    // make the computation and generate a proof of correctness
-    async computeAndProve(secret, input, prover_material){
-        // Here we use the method that will be provided by the user
-        // And we don't compute any proof since it
-        return {output:this.computeOutput(secret, input), proof:[]}
+    /**
+     * Makes the computation and returns the output, with an empty proof
+     * @param {Number} public_input the public input of the computation.
+     */
+    computeAndProve(public_input){
+        return {output:this.computeOutput(this.secret, public_input), proof:[]}
     }
 
 }

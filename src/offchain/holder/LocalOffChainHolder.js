@@ -1,55 +1,75 @@
 const web3Connector = require("../web3/web3Connector");
 const assert = require('assert');
-const OffChainHolderDeployer = require('./OffChainHolderDeployer');
+const ContractDeployer = require('../web3/ContractDeployer');
 
+/**
+ * This class is the off-chain part of
+ * the OffChainHolder construct.
+ * The OffChainHolder construct as 2 parts : 
+ * A smart contract (holder contract) that registers requests for computations, and notifies new requests through events.
+ * And a code (this) running locally, waiting for requests modifications, performing computations
+ * and returning the results (along with proofs, if needed).
+ */
 module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedClass {
 
-    constructor(config, holder_contract_json, secret, verifiable_computation){
+    /**
+     * 
+     * @param {{node_address:string, verbose:bool}} config 
+     *  the node_address field should be set to the address and port of the ethereum node interface.
+     *  the verbose field should be set to true if status messages need to be printed.
+     * @param {Object} verifiable_computation_suite this is a class instance that encapsulate the way the computation is done and verified.
+     *  It should be an instance of a subclass of AbstractSuite
+     */
+    constructor(config, verifiable_computation_suite){
         super(config);
         this.config = config;
-        this.holder_contract_json = holder_contract_json;
-        this.secret = secret;
-        this.verifiable_computation = verifiable_computation;
+        this.verifiable_computation_suite = verifiable_computation_suite;
         this.connected = false;
         this.started = false;
     }
 
-    async deploy(deploy_options){
+    /**
+     * Connects the class to an already deployed holder contract. 
+     * @param {Object} holder_contract_abi the ABI of the deployed holder contract
+     * @param {string} address the address of the contract
+     */
+    async connect(holder_contract_abi, address){
         assert(!this.connected, "the holder was already connected to a contract");
-        let verification_data = this.verifiable_computation.verificationData(this.secret);
-        let deployer = new OffChainHolderDeployer(this.config);
-        await deployer.deploy(deploy_options, this.holder_contract_json, verification_data.verifier_material);
-        let address = deployer.getContractAddress();
-        await this.connect(address, verification_data);
-    }
-
-    async connect(address, verification_data){
-        assert(!this.connected, "the holder was already connected to a contract");
-        this.verification_data = verification_data;
         this._connectWeb3Ws();
-        this.contract = new this.web3.eth.Contract(this.holder_contract_json.abi, address);
+        this.contract = new this.web3.eth.Contract(holder_contract_abi, address);
         this.connected = true;
     }
 
+    /**
+     * Starts an event listener for new request notifications, and answer notifications with (verified) computations.
+     * @param {{from:string, password:string, unlockDuration:int, gas:Number, gasPrice:Number, value:Number}} answer_options 
+     * should contain the account and password to be used for the answer transaction
+     * also optionally the gas, gasPrice and value used for the transaction.
+     */
     async start(answer_options){
         assert(this.connected, "the holder wasn't connected to a contract");
         assert(!this.started, "the holder was already started");
-        this._startAnsweringRequests(answer_options); 
+        this.subscription = this.contract.events.NewRequest()
+        .on("data", this._answerRequest(answer_options))
+        .on("error", console.error);
+        this.config.verbose && console.log("Started listening to holder contract events");
         this.started = true;
     }
 
+    /**
+     * Returns the address of the holder contract
+     */
     getContractAddress(){
         assert(this.connected, "The holder wasn't connected to a contract");
         return this.contract.options.address;
     }
 
-    _startAnsweringRequests(answer_options){
-        this.subscription = this.contract.events.NewRequest()
-        .on("data", this._answerRequest(answer_options))
-        .on("error", console.error);
-        this.config.verbose && console.log("Started listening to holder contract events");
-    }
-
+    /**
+     * Parse the data of new requests events, and replies with an answer to the request.
+     * @param {{from:string, password:string, unlockDuration:int, gas:Number, gasPrice:Number, value:Number}} answer_options 
+     * should contain the account and password to be used for the answer transaction
+     * also optionally the gas, gasPrice and value used for the transaction. 
+     */
     _answerRequest(answer_options){
         return (data) => {
             this.config.verbose && console.log("Received a Request");
@@ -66,9 +86,7 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                 this.config.verbose && console.log(`id: ${id} input: ${input} reward: ${reward}`);
                 this.web3.eth.personal.unlockAccount(answer_options.account, answer_options.password, answer_options.unlockDuration)
                 .then( () => 
-                    this.verifiable_computation.computeAndProve(
-                        this.secret, input, this.verification_data.prover_material
-                    )
+                    this.verifiable_computation_suite.computeAndProve(input)
                 )
                 .then( verifiable_output  => {
                     if(this.config.verbose){
