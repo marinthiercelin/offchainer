@@ -14,10 +14,10 @@ module.exports.web3ConnectedClass = class {
     }
     _connectWeb3Ws(){
         this.config.verbose && console.log("Connecting web3 with ws");
-        this.web3.setProvider(new Web3.providers.WebsocketProvider(`ws://${this.config.node_address}`));
+        this.web3.setProvider(new Web3.providers.WebsocketProvider(this.config.node_ws_rpc));
     }
     _connectWeb3Http(){
         this.config.verbose && console.log("Connecting web3 with http");
-        this.web3.setProvider(new Web3.providers.HttpProvider(`http://${this.config.node_address}`));
+        this.web3.setProvider(new Web3.providers.HttpProvider(this.config.node_http_rpc));
     }
 }

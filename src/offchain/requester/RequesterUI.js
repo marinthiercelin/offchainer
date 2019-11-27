@@ -117,27 +117,40 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
     }
 
     _waitForOutputEvent(method_info, request_id, resolve, reject){
-        this.config.verbose && console.log(`Waiting for event ${method_info.output_event} with id ${request_id}`);
-        this.contract.events[method_info.output_event]({filter:{id:request_id}})
-        .on("data", (output_event)=>{
-            if(
-                typeof output_event === "undefined" || 
-                typeof output_event.returnValues === "undefined" || 
-                typeof output_event.returnValues.id === "undefined"
-            ){
-                reject("Could not find the output");
+        let options = {filter:{id:request_id}, fromBlock: 0, toBlock: 'latest'};
+        this.contract.getPastEvents(method_info.output_event, options)
+        .then( past_events => {
+            if(past_events.length > 0){
+                this.config.verbose && console.log(`The event ${method_info.output_event} with id ${request_id} was already emitted`);
+                this._dealWithOutputEvent(reject, request_id, method_info, resolve)(past_events[0]);
             }else{
+                this.config.verbose && console.log(`Waiting for event ${method_info.output_event} with id ${request_id}`);
+                this.contract.events[method_info.output_event](options)
+                .on("data", this._dealWithOutputEvent(reject, request_id, method_info, resolve) )
+                .on("error", (error)=>{
+                    reject(error);
+                });
+            }
+        })
+        .catch(reject);
+    }
+
+    _dealWithOutputEvent(reject, request_id, method_info, resolve) {
+        return (output_event) => {
+            if (typeof output_event === "undefined" ||
+                typeof output_event.returnValues === "undefined" ||
+                typeof output_event.returnValues.id === "undefined") {
+                reject("Could not find the output");
+            }
+            else {
                 let received_id = parseInt(output_event.returnValues.id);
-                if(received_id === request_id){
-                    this._waitForOutputEvent(method_info, request_id, resolve, reject);
+                if (received_id === request_id) {
                     resolve(output_event.returnValues);
-                }else{
+                }
+                else {
                     this.config.verbose && console.log("Received output event with wrong id");
                 }
             }
-        })
-        .on("error", (error)=>{
-            reject(error);
-        });
+        };
     }
 }

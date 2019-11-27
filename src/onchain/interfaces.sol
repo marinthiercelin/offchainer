@@ -53,7 +53,7 @@ contract SecretHolder {
 
 contract OnChainSecretHolder is SecretHolder {
     uint private secret;
-    constructor(uint secret_value) internal{
+    constructor(uint secret_value) public {
         secret = secret_value;
     }
     function makeComputation(uint id, uint input) internal{

@@ -1,0 +1,2 @@
+def main(private field secret_input, field public_input) -> (field):
+    return secret_input + public_input

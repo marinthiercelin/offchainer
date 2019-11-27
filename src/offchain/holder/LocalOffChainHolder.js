@@ -1,6 +1,6 @@
 const web3Connector = require("../web3/web3Connector");
 const assert = require('assert');
-const ContractDeployer = require('../web3/ContractDeployer');
+const ContractDeployer = require('../helpers/ContractDeployer');
 
 /**
  * This class is the off-chain part of

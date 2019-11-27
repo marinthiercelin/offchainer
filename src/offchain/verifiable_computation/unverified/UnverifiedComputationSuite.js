@@ -1,4 +1,4 @@
-const AbstractSuite = require('./AbstractSuite');
+const AbstractSuite = require('../AbstractSuite');
 
 /**
  * Class that performs the computation without giving any kind of way to verify correctness.
