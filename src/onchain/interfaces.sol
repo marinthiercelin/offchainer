@@ -20,7 +20,7 @@ contract SecretRequester {
 
 contract SecretHolder {
 
-    SecretRequester requester;
+    SecretRequester public requester;
     bool is_registered;
     uint private id_counter;
 
@@ -83,6 +83,7 @@ contract OffChainSecretHolder is SecretHolder {
         bool check = verifyProof(requests[id].input, output, proof);
         require(check, "The proof was incorrect");
         emit NewAnswer(id, requests[id].input, output);
+        requests[id].active = false;
         msg.sender.transfer(requests[id].reward);
         bytes memory payload = abi.encodeWithSignature("callback(uint256,uint256)", id, output);
         address(requester).call(payload);

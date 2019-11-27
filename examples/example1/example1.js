@@ -24,11 +24,11 @@ const modes ={
 
 async function main(){
     if(process.argv.length < 2){
-        throw `Need to choose a mode in ${modes.keys()}`;
+        throw `Need to choose a mode in ${Object.keys(modes)}`;
     }
     let mode = modes[process.argv[2]]
     if(!mode){
-        throw `Need to choose a mode in ${modes.keys()}`;
+        throw `Need to choose a mode in ${Object.keys(modes).join(" ")}`;
     }
     let secret = 7;
     let holder_setup = await mode.setup(secret, config, options);
@@ -72,4 +72,4 @@ async function main(){
     console.log(output);
 }
 
-main().then(()=>console.log("Finished")).catch(console.error);
+main().then(()=>console.log("Finished")).catch(console.error).finally(process.exit);
