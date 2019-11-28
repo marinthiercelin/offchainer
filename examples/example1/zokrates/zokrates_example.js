@@ -1,12 +1,12 @@
 var offchainer = require('../../../index.js');
 var path = require('path');
-
 module.exports.setup = async function(secret, config, options){
     const zokrates_file = path.resolve(__dirname + '/test_computation.zok');
     const build_dir = path.resolve(__dirname+"/../build/zokrates");
     const setup_dir = path.resolve(build_dir+"/setup");
     const setup_json = path.resolve(setup_dir + '/setup.json');
     
+
     let zokratesSetup = new offchainer.verifiable_computation.zokrates.Setup(config);
     await zokratesSetup.init(offchainer.commitment.HashBasedCommitment, zokrates_file, setup_dir, options);
     zokratesSetup.save(setup_json);

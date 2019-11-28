@@ -13,11 +13,17 @@ module.exports.web3ConnectedClass = class {
         this.web3 = new Web3();
     }
     _connectWeb3Ws(){
+        const options = {
+            transactionConfirmationBlocks: 1
+        };
         this.config.verbose && console.log("Connecting web3 with ws");
-        this.web3.setProvider(new Web3.providers.WebsocketProvider(this.config.node_ws_rpc));
+        this.web3.setProvider(new Web3.providers.WebsocketProvider(this.config.node_ws_rpc, options));
     }
     _connectWeb3Http(){
+        const options = {
+            transactionConfirmationBlocks: 1
+        };
         this.config.verbose && console.log("Connecting web3 with http");
-        this.web3.setProvider(new Web3.providers.HttpProvider(this.config.node_http_rpc));
+        this.web3.setProvider(new Web3.providers.HttpProvider(this.config.node_http_rpc, options));
     }
 }

@@ -66,7 +66,7 @@ module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {
 
         let contractDeployer = new ContractDeployer(this.config);
         this.config.verbose && console.log("Deploying the verifier contract");
-        this.setup_values.verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin);
+        this.setup_values.verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin, [], "owner", "verifier dep.");
     }
 
     getSetupValues(){

@@ -1,6 +1,7 @@
 const web3Connector = require("../web3/web3Connector");
 const assert = require('assert');
 const ContractDeployer = require('../helpers/ContractDeployer');
+const {performance} = require('perf_hooks');
 
 /**
  * This class is the off-chain part of
@@ -84,11 +85,36 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                 let input = parseInt(data.returnValues.input);
                 let reward = parseInt(data.returnValues.reward);
                 this.config.verbose && console.log(`id: ${id} input: ${input} reward: ${reward}`);
+                var t0=0;
                 this.web3.eth.personal.unlockAccount(answer_options.account, answer_options.password, answer_options.unlockDuration)
-                .then( () => 
-                    this.verifiable_computation_suite.computeAndProve(input)
-                )
+                .then( () =>{
+                    t0 = performance.now();
+                    return this.verifiable_computation_suite.computeAndProve(input);
+                })
                 .then( verifiable_output  => {
+                    var t1 = performance.now();
+                    if(this.config.measure){
+                        this.config.measure.write(
+                            this.config.measure.file, 
+                            {
+                                actor: "owner",
+                                action: "proof",
+                                type: "time",
+                                value: t1 - t0,
+                                unit: "ms",
+                            }
+                        )
+                        this.config.measure.write(
+                            this.config.measure.file, 
+                            {
+                                actor: "owner",
+                                action: "proof",
+                                type: "size",
+                                value: (verifiable_output.proof.length-2)/2,
+                                unit: "byte",
+                            }
+                        )
+                    }
                     if(this.config.verbose){
                         console.log(`Answering a request id: ${id} input: ${input} output: ${verifiable_output.output}`);
                     }
@@ -97,13 +123,25 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                         verifiable_output.output, 
                         verifiable_output.proof
                     );
-                    answerTx.send({
+                    return answerTx.send({
                         from: answer_options.account,
                         gas: answer_options.gas,
                         gasPrice: answer_options.gasPrice,
                         value: answer_options.value
-                    })
-                    .on("error", console.error);
+                    });
+                }).then(receipt =>{
+                    if(this.config.measure){
+                        this.config.measure.write(
+                            this.config.measure.file, 
+                            {
+                                actor: "owner",
+                                action: "answer",
+                                type: "gas",
+                                value: receipt.gasUsed*answer_options.gasPrice,
+                                unit: "wei",
+                            }
+                        )
+                    }
                 });
             }
         }

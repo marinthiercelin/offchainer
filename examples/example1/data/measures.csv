@@ -1,0 +1,176 @@
+mode,actor,action,type,value,unit
+onchain,owner,setup,time,24.631586000323296,ms
+onchain,owner,holder dep.,size,1204,byte
+onchain,owner,holder dep.,gas,31251300000000000,wei
+onchain,owner,holder dep.,time,4641.57290700078,ms
+onchain,owner,requester dep.,size,1029,byte
+onchain,owner,requester dep.,gas,26608300000000000,wei
+onchain,owner,requester dep.,time,3942.2073870003223,ms
+onchain,user,request,gas,5457600000000000,wei
+onchain,user,request,time,4086.191573999822,ms
+onchain,owner,setup,time,27.459524996578693,ms
+onchain,owner,holder dep.,size,1204,byte
+onchain,owner,holder dep.,gas,31251300000000000,wei
+onchain,owner,holder dep.,time,3853.5044540017843,ms
+onchain,owner,requester dep.,size,1029,byte
+onchain,owner,requester dep.,gas,26608300000000000,wei
+onchain,owner,requester dep.,time,3933.236729003489,ms
+onchain,user,request,gas,5457600000000000,wei
+onchain,user,request,time,4149.299132995307,ms
+onchain,owner,setup,time,34.09431400150061,ms
+onchain,owner,holder dep.,size,1204,byte
+onchain,owner,holder dep.,gas,31251300000000000,wei
+onchain,owner,holder dep.,time,3786.0716949999332,ms
+onchain,owner,requester dep.,size,1029,byte
+onchain,owner,requester dep.,gas,26608300000000000,wei
+onchain,owner,requester dep.,time,3927.7017530053854,ms
+onchain,user,request,gas,5457600000000000,wei
+onchain,user,request,time,4104.933829002082,ms
+onchain,owner,setup,time,20.764563001692295,ms
+onchain,owner,holder dep.,size,1204,byte
+onchain,owner,holder dep.,gas,31251300000000000,wei
+onchain,owner,holder dep.,time,3886.8389849960804,ms
+onchain,owner,requester dep.,size,1029,byte
+onchain,owner,requester dep.,gas,26608300000000000,wei
+onchain,owner,requester dep.,time,3971.5025449991226,ms
+onchain,user,request,gas,5457600000000000,wei
+onchain,user,request,time,4111.338168002665,ms
+onchain,owner,setup,time,24.9371699988842,ms
+onchain,owner,holder dep.,size,1204,byte
+onchain,owner,holder dep.,gas,31251300000000000,wei
+onchain,owner,holder dep.,time,3847.769446000457,ms
+onchain,owner,requester dep.,size,1029,byte
+onchain,owner,requester dep.,gas,26608300000000000,wei
+onchain,owner,requester dep.,time,3963.1818140000105,ms
+onchain,user,request,gas,5457600000000000,wei
+onchain,user,request,time,4129.011900998652,ms
+unverified,owner,holder dep.,size,2281,byte
+unverified,owner,setup,time,31.563046999275684,ms
+unverified,owner,holder dep.,gas,53820000000000000,wei
+unverified,owner,holder dep.,time,3822.864946000278,ms
+unverified,owner,requester dep.,size,1029,byte
+unverified,owner,requester dep.,gas,26608300000000000,wei
+unverified,owner,requester dep.,time,3974.2821260020137,ms
+unverified,user,request,gas,9228800000000000,wei
+unverified,owner,proof,time,0.2356410026550293,ms
+unverified,owner,proof,size,-1,byte
+unverified,user,request,time,7924.0119230002165,ms
+unverified,owner,answer,gas,2399700000000000,wei
+unverified,owner,setup,time,96.23377300053835,ms
+unverified,owner,holder dep.,size,2281,byte
+unverified,owner,holder dep.,gas,53820000000000000,wei
+unverified,owner,holder dep.,time,3951.186450995505,ms
+unverified,owner,requester dep.,size,1029,byte
+unverified,owner,requester dep.,gas,26608300000000000,wei
+unverified,owner,requester dep.,time,3998.1718159988523,ms
+unverified,user,request,gas,9228800000000000,wei
+unverified,owner,proof,time,0.018054001033306122,ms
+unverified,owner,proof,size,-1,byte
+unverified,user,request,time,7908.6405540034175,ms
+unverified,owner,answer,gas,2399700000000000,wei
+unverified,owner,setup,time,102.63249599933624,ms
+unverified,owner,holder dep.,size,2281,byte
+unverified,owner,holder dep.,gas,53820000000000000,wei
+unverified,owner,holder dep.,time,3950.979593001306,ms
+unverified,owner,requester dep.,size,1029,byte
+unverified,owner,requester dep.,gas,26608300000000000,wei
+unverified,owner,requester dep.,time,3975.2957109957933,ms
+unverified,user,request,gas,9228800000000000,wei
+unverified,owner,proof,time,0.03958400338888168,ms
+unverified,owner,proof,size,-1,byte
+unverified,user,request,time,7916.083686999977,ms
+unverified,owner,answer,gas,2399700000000000,wei
+unverified,owner,setup,time,68.57286600023508,ms
+unverified,owner,holder dep.,size,2281,byte
+unverified,owner,holder dep.,gas,53820000000000000,wei
+unverified,owner,holder dep.,time,3968.352471999824,ms
+unverified,owner,requester dep.,size,1029,byte
+unverified,owner,requester dep.,gas,26608300000000000,wei
+unverified,owner,requester dep.,time,3944.1640150025487,ms
+unverified,user,request,gas,9228800000000000,wei
+unverified,owner,proof,time,0.03205099701881409,ms
+unverified,owner,proof,size,-1,byte
+unverified,user,request,time,7943.225607998669,ms
+unverified,owner,answer,gas,2399700000000000,wei
+unverified,owner,setup,time,89.4146260023117,ms
+unverified,owner,holder dep.,size,2281,byte
+unverified,owner,holder dep.,gas,53820000000000000,wei
+unverified,owner,holder dep.,time,3935.259635999799,ms
+unverified,owner,requester dep.,size,1029,byte
+unverified,owner,requester dep.,gas,26608300000000000,wei
+unverified,owner,requester dep.,time,3950.3290369957685,ms
+unverified,user,request,gas,9228800000000000,wei
+unverified,owner,proof,time,0.019896000623703003,ms
+unverified,owner,proof,size,-1,byte
+unverified,user,request,time,7961.365333996713,ms
+unverified,owner,answer,gas,2399700000000000,wei
+zokrates,owner,verifier dep.,size,4607,byte
+zokrates,owner,verifier dep.,gas,104149600000000000,wei
+zokrates,owner,setup,time,20086.941537998617,ms
+zokrates,owner,holder dep.,size,5034,byte
+zokrates,owner,holder dep.,gas,115156300000000000,wei
+zokrates,owner,holder dep.,time,3932.2289220020175,ms
+zokrates,owner,requester dep.,size,1029,byte
+zokrates,owner,requester dep.,gas,26612700000000000,wei
+zokrates,owner,requester dep.,time,3954.976614996791,ms
+zokrates,user,request,gas,9233200000000000,wei
+zokrates,owner,proof,time,2923.1179980039597,ms
+zokrates,owner,proof,size,127,byte
+zokrates,user,request,time,9935.303175002337,ms
+zokrates,owner,answer,gas,32708700000000000,wei
+zokrates,owner,verifier dep.,size,4606,byte
+zokrates,owner,verifier dep.,gas,104130400000000000,wei
+zokrates,owner,setup,time,20100.203698001802,ms
+zokrates,owner,holder dep.,size,5034,byte
+zokrates,owner,holder dep.,gas,115156300000000000,wei
+zokrates,owner,holder dep.,time,3930.337499000132,ms
+zokrates,owner,requester dep.,size,1029,byte
+zokrates,owner,requester dep.,gas,26612700000000000,wei
+zokrates,owner,requester dep.,time,3899.910716995597,ms
+zokrates,user,request,gas,9233200000000000,wei
+zokrates,owner,proof,time,2850.955954000354,ms
+zokrates,owner,proof,size,127,byte
+zokrates,user,request,time,12006.826421998441,ms
+zokrates,owner,answer,gas,32709900000000000,wei
+zokrates,owner,verifier dep.,size,4607,byte
+zokrates,owner,verifier dep.,gas,104153200000000000,wei
+zokrates,owner,setup,time,20109.58324199915,ms
+zokrates,owner,holder dep.,size,5034,byte
+zokrates,owner,holder dep.,gas,115156300000000000,wei
+zokrates,owner,holder dep.,time,3897.5829599946737,ms
+zokrates,owner,requester dep.,size,1029,byte
+zokrates,owner,requester dep.,gas,26612700000000000,wei
+zokrates,owner,requester dep.,time,3922.171195998788,ms
+zokrates,user,request,gas,9233200000000000,wei
+zokrates,owner,proof,time,2858.9942659959197,ms
+zokrates,owner,proof,size,127,byte
+zokrates,user,request,time,9952.799908995628,ms
+zokrates,owner,answer,gas,32709900000000000,wei
+zokrates,owner,verifier dep.,size,4607,byte
+zokrates,owner,verifier dep.,gas,104154400000000000,wei
+zokrates,owner,setup,time,20116.79633500427,ms
+zokrates,owner,holder dep.,size,5034,byte
+zokrates,owner,holder dep.,gas,115156300000000000,wei
+zokrates,owner,holder dep.,time,3921.0095430016518,ms
+zokrates,owner,requester dep.,size,1029,byte
+zokrates,owner,requester dep.,gas,26612700000000000,wei
+zokrates,owner,requester dep.,time,3928.1912119984627,ms
+zokrates,user,request,gas,9233200000000000,wei
+zokrates,owner,proof,time,2839.3797289952636,ms
+zokrates,owner,proof,size,127,byte
+zokrates,user,request,time,9975.92248699814,ms
+zokrates,owner,answer,gas,32709900000000000,wei
+zokrates,owner,verifier dep.,size,4607,byte
+zokrates,owner,verifier dep.,gas,104153200000000000,wei
+zokrates,owner,setup,time,20094.388505995274,ms
+zokrates,owner,holder dep.,size,5034,byte
+zokrates,owner,holder dep.,gas,115156300000000000,wei
+zokrates,owner,holder dep.,time,3896.75804900378,ms
+zokrates,owner,requester dep.,size,1029,byte
+zokrates,owner,requester dep.,gas,26612700000000000,wei
+zokrates,owner,requester dep.,time,3928.917203001678,ms
+zokrates,user,request,gas,9233200000000000,wei
+zokrates,owner,proof,time,2882.99614199996,ms
+zokrates,owner,proof,size,127,byte
+zokrates,user,request,time,9956.630872994661,ms
+zokrates,owner,answer,gas,32708700000000000,wei

@@ -1,5 +1,7 @@
 const web3Connector = require("../web3/web3Connector");
 const assert = require('assert');
+const util = require('util');
+const {stringify} =require('flatted');
 
 /**
  * This class deploys the a smart contract to the chain
@@ -24,7 +26,7 @@ module.exports = class ContractDeployer extends web3Connector.web3ConnectedClass
      * @param {string} holder_contract_bin 
      * @param {Object} deploy_args 
      */
-    async deploy(deploy_options, holder_contract_abi, holder_contract_bin, deploy_args){
+    async deploy(deploy_options, holder_contract_abi, holder_contract_bin, deploy_args, actor="unknown", action="dep."){
         this._connectWeb3Ws();
         let contractObject = new this.web3.eth.Contract(holder_contract_abi);
         if(holder_contract_bin.length < 2 || holder_contract_bin[0]!=="0" || holder_contract_bin[1]!=="x"){
@@ -34,13 +36,40 @@ module.exports = class ContractDeployer extends web3Connector.web3ConnectedClass
             data:holder_contract_bin, 
             arguments: deploy_args
         });
+        if(this.config.measure){
+            this.config.measure.write(
+                this.config.measure.file, 
+                {
+                    actor: actor,
+                    action: action,
+                    type: "size",
+                    value: (deploymentTx._deployData.length-2)/2,
+                    unit: "byte",
+                }
+            )
+        }
         await this.web3.eth.personal.unlockAccount(deploy_options.account, deploy_options.password, deploy_options.unlockDuration);
         this.contract = await deploymentTx.send({
             from: deploy_options.account,
             gas: deploy_options.gas,
             gasPrice: deploy_options.gasPrice,
             value: deploy_options.value,
-        }).on("error", (error)=> {console.log(error); throw "Couldn't deploy contract"});
+        })
+        .on("receipt", (receipt)=> {
+            if(this.config.measure){
+                this.config.measure.write(
+                    this.config.measure.file, 
+                    {
+                        actor: actor,
+                        action: action,
+                        type: "gas",
+                        value: receipt.gasUsed*deploy_options.gasPrice,
+                        unit: "wei",
+                    }
+                )
+            }
+        })
+        .on("error", (error)=> {console.log(error); throw "Couldn't deploy contract"});
         this.deployed = true;
         this.config.verbose && console.log("Contract deployed");
         return this.contract.options.address;

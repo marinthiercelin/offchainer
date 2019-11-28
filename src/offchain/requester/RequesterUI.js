@@ -83,14 +83,14 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
                     gasPrice: send_options.gasPrice,
                     value: send_options.value
                 })
-                .on("receipt", this._dealWithReceiptCallBack(method_info, resolve, reject))
-                .on("confirmation", this._dealWithConfirmationCallBack(method_info, resolve, reject))
+                .on("receipt", this._dealWithReceiptCallBack(method_info, send_options, resolve, reject))
+                .on("confirmation", this._dealWithConfirmationCallBack(method_info, send_options, resolve, reject))
                 .on("error", (e) => reject(e));
             })
         });
     }
 
-    _dealWithConfirmationCallBack(method_info, resolve, reject){
+    _dealWithConfirmationCallBack(method_info, send_options, resolve, reject){
         return (number)=>{
             if(method_info.block_timeout && number >= method_info.block_timeout){
                 this.config.verbose && console.log(`Received confirmation nb ${number}`);
@@ -99,9 +99,21 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
         }
     }
 
-    _dealWithReceiptCallBack(method_info, resolve, reject){
+    _dealWithReceiptCallBack(method_info, send_options, resolve, reject){
         return (data) => {
             this.config.verbose && console.log(`Received a receipt for ${method_info.name}`);
+            if(this.config.measure){
+                this.config.measure.write(
+                    this.config.measure.file, 
+                    {
+                        actor: "user",
+                        action: "request",
+                        type: "gas",
+                        value: data.gasUsed*send_options.gasPrice,
+                        unit: "wei",
+                    }
+                )
+            }
             let input_event = data.events[method_info.input_event];
             if(
                 typeof input_event === "undefined" || 
