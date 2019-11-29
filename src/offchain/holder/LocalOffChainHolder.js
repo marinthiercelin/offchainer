@@ -93,27 +93,23 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                 })
                 .then( verifiable_output  => {
                     var t1 = performance.now();
-                    if(this.config.measure){
-                        this.config.measure.write(
-                            this.config.measure.file, 
-                            {
-                                actor: "owner",
-                                action: "proof",
-                                type: "time",
-                                value: t1 - t0,
-                                unit: "ms",
-                            }
-                        )
-                        this.config.measure.write(
-                            this.config.measure.file, 
-                            {
-                                actor: "owner",
-                                action: "proof",
-                                type: "size",
-                                value: (verifiable_output.proof.length-2)/2,
-                                unit: "byte",
-                            }
-                        )
+                    if(this.config.write_measure){
+                        var measure_time = {
+                            actor: "owner",
+                            action: "proof",
+                            type: "time",
+                            value: t1 - t0,
+                            unit: "ms",
+                        };
+                        this.config.write_measure(measure_time);
+                        var measure_size = {
+                            actor: "owner",
+                            action: "proof",
+                            type: "size",
+                            value: (verifiable_output.proof.length-2)/2,
+                            unit: "byte",
+                        };
+                        this.config.write_measure(measure_size);
                     }
                     if(this.config.verbose){
                         console.log(`Answering a request id: ${id} input: ${input} output: ${verifiable_output.output}`);
@@ -123,6 +119,7 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                         verifiable_output.output, 
                         verifiable_output.proof
                     );
+                    t0 = performance.now();
                     return answerTx.send({
                         from: answer_options.account,
                         gas: answer_options.gas,
@@ -130,17 +127,24 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                         value: answer_options.value
                     });
                 }).then(receipt =>{
-                    if(this.config.measure){
-                        this.config.measure.write(
-                            this.config.measure.file, 
-                            {
-                                actor: "owner",
-                                action: "answer",
-                                type: "gas",
-                                value: receipt.gasUsed*answer_options.gasPrice,
-                                unit: "wei",
-                            }
-                        )
+                    var t1 = performance.now();
+                    if(this.config.write_measure){
+                        var measure_time = {
+                            actor: "owner",
+                            action: "answer",
+                            type: "time",
+                            value: t1 - t0,
+                            unit: "ms",
+                        };
+                        this.config.write_measure(measure_time);
+                        var measure_data = {
+                            actor: "owner",
+                            action: "answer",
+                            type: "gas",
+                            value: receipt.gasUsed*answer_options.gasPrice,
+                            unit: "wei",
+                        };
+                        this.config.write_measure(measure_data);
                     }
                 });
             }

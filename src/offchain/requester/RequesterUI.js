@@ -102,17 +102,15 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
     _dealWithReceiptCallBack(method_info, send_options, resolve, reject){
         return (data) => {
             this.config.verbose && console.log(`Received a receipt for ${method_info.name}`);
-            if(this.config.measure){
-                this.config.measure.write(
-                    this.config.measure.file, 
-                    {
-                        actor: "user",
-                        action: "request",
-                        type: "gas",
-                        value: data.gasUsed*send_options.gasPrice,
-                        unit: "wei",
-                    }
-                )
+            if(this.config.write_measure){
+                var measure_gas = {
+                    actor: "user",
+                    action: "request",
+                    type: "gas",
+                    value: data.gasUsed*send_options.gasPrice,
+                    unit: "wei",
+                };
+                this.config.write_measure(measure_gas);
             }
             let input_event = data.events[method_info.input_event];
             if(

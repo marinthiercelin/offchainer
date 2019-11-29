@@ -1,5 +1,7 @@
 var offchainer = require('../../../index.js');
 var path = require('path');
+var {performance} = require('perf_hooks');
+
 module.exports.setup = async function(secret, config, options){
     const zokrates_file = path.resolve(__dirname + '/test_computation.zok');
     const build_dir = path.resolve(__dirname+"/../build/zokrates");
@@ -8,11 +10,38 @@ module.exports.setup = async function(secret, config, options){
     
 
     let zokratesSetup = new offchainer.verifiable_computation.zokrates.Setup(config);
-    await zokratesSetup.init(offchainer.commitment.HashBasedCommitment, zokrates_file, setup_dir, options);
+
+    t0 = performance.now();
+    await zokratesSetup.init(offchainer.commitment.HashBasedCommitment, zokrates_file, setup_dir);
+    t1 = performance.now();
+    if(config.write_measure){
+        var measure_data = {
+            actor: "trusted 3rd party",
+            action: "key generation",
+            type: "time",
+            value: t1 - t0,
+            unit: "ms",
+        };
+        config.write_measure(measure_data);
+    }
+
+    t0 = performance.now();
+    await zokratesSetup.deployVerifier(options);
+    t1 = performance.now();
+    if(config.write_measure){
+        var measure_data = {
+            actor: "trusted 3rd party",
+            action: "verifier deployment",
+            type: "time",
+            value: t1 - t0,
+            unit: "ms",
+        };
+        config.write_measure(measure_data);
+    }
     zokratesSetup.save(setup_json);
     // zokratesSetup.load(setup_json);
 
-    console.log(`Verifier contract at address ${zokratesSetup.getSetupValues().verifier_address}`);
+    config.verbose && console.log(`Verifier contract at address ${zokratesSetup.getSetupValues().verifier_address}`);
 
     let suite = new offchainer.verifiable_computation.zokrates.Suite(config, zokratesSetup, secret, offchainer.commitment.HashBasedCommitment);
     

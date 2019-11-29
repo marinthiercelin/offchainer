@@ -26,7 +26,7 @@ module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {
      * @param {*} setup_dir 
      * @param {{from:string, password:string, unlockDuration:int, gas:Number, gasPrice:Number, value:Number}} deploy_options 
      */
-    async init(commitment_scheme, zokrates_filepath, setup_dir, deploy_options){
+    async init(commitment_scheme, zokrates_filepath, setup_dir){
         assert(!this.was_setup, "the suite was already set up");
         this.setup_values.setup_dir = setup_dir;
         if (!fs.existsSync(this.setup_values.setup_dir)){
@@ -41,7 +41,6 @@ module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {
         this.setup_values.proving_key_file = `${this.setup_values.setup_dir}/proving.key`;
         let setup_cmd = `zokrates setup --light -i ${this.setup_values.compiled_file} -v ${this.setup_values.verification_key_file} -p ${this.setup_values.proving_key_file};`;
         await exec_command(setup_cmd);
-        await this._deployVerifier(deploy_options);
         this.was_setup = true;
         return this.setup_values;
     }
@@ -52,25 +51,29 @@ module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {
         this.was_setup = true;
     }
 
-    async _deployVerifier(deploy_options){
+    async deployVerifier(deploy_options){
         this.setup_values.verifier_contract_file = `${this.setup_values.setup_dir}/verifier.sol`;
         let export_verifier_cmd = `zokrates export-verifier -i ${this.setup_values.verification_key_file} -o ${this.setup_values.verifier_contract_file}`;
         await exec_command(export_verifier_cmd);
-
         let verifier = await solidity_compiler.getCompiledContract(
             true,
             'Verifier', 
             this.setup_values.verifier_contract_file, 
             this.setup_values.setup_dir
         );
-
         let contractDeployer = new ContractDeployer(this.config);
         this.config.verbose && console.log("Deploying the verifier contract");
-        this.setup_values.verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin, [], "owner", "verifier dep.");
+        this.setup_values.verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin, [], "trusted 3rd party", "verifier deployment");
+        return this.setup_values.verifier_address;
+    }
+
+    useDeployedVerifier(verifier_address){
+        this.setup_values.verifier_address = verifier_address;
     }
 
     getSetupValues(){
         assert(this.was_setup, "the suite wasn't set up");
+        assert(typeof this.setup_values.verifier_address != "undefined", "the verifier wasn't deployed");
         return this.setup_values;
     }
 
@@ -87,6 +90,7 @@ module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {
 
     async verifyProof(proof_file){
         assert(this.was_setup, "the suite wasn't set up");
+        assert(typeof this.setup_values.verifier_address != "undefined", "the verifier wasn't deployed");
         let Verifier_abi = JSON.parse(fs.readFileSync(`${this.setup_values.setup_dir}/Verifier.abi`));
         this._connectWeb3Ws();
         let verifier = await new this.web3.eth.Contract(Verifier_abi, this.setup_values.verifier_address);

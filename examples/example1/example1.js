@@ -3,8 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const {performance} = require('perf_hooks');
 
-
-
 var options = {
     account: "0x3fa68075aa987cf3b61ed52b54c936ab2007f38b",
     password: "the_password",
@@ -20,24 +18,12 @@ const modes ={
     "zokrates": require("./zokrates/zokrates_example"),
 };
 
-async function main(mode_chosen){
-
-    function writeMeasure(file, data){
-        if(!fs.existsSync(file)){
-            fs.writeFileSync(file, "mode,actor,action,type,value,unit\n");
-        }
-        let str = `${mode_chosen},${data.actor},${data.action},${data.type},${data.value},${data.unit}\n`
-        fs.appendFile(file, str,function (err) {});
-    }
-    
+async function main(mode_chosen, verbose, write_measure){
     var config = {
         node_http_rpc:"http://127.0.0.1:8545",
         node_ws_rpc:"ws://127.0.0.1:8546",
-        verbose:true,
-        measure: {
-            write:  writeMeasure,
-            file: path.resolve(__dirname+"/data/measures.csv")
-        }
+        verbose:verbose,
+        write_measure:write_measure,
     }
     
     let mode = modes[mode_chosen]
@@ -48,40 +34,24 @@ async function main(mode_chosen){
     var t1=0;
 
     let secret = 7;
-    t0 = performance.now();
     let holder_setup = await mode.setup(secret, config, options);
-    t1 = performance.now();
-    if(config.measure){
-        config.measure.write(
-            config.measure.file, 
-            {
-                actor: "owner",
-                action: "setup",
-                type: "time",
-                value: t1 - t0,
-                unit: "ms",
-            }
-        )
-    }
 
     var contractDeployer = new offchainer.helpers.ContractDeployer(config);
 
     config.verbose && console.log("Deploying holder contract");
     t0 = performance.now();
-    let holder_address = await contractDeployer.deploy(options, holder_setup.holder_contract.abi, holder_setup.holder_contract.bin, holder_setup.holder_args, "owner", "holder dep.");
+    let holder_address = await contractDeployer.deploy(options, holder_setup.holder_contract.abi, holder_setup.holder_contract.bin, holder_setup.holder_args, "owner", "holder deployment");
     t1 = performance.now();
-    console.log(`Holder address: ${holder_address}`);
-    if(config.measure){
-        config.measure.write(
-            config.measure.file, 
-            {
-                actor: "owner",
-                action: "holder dep.",
-                type: "time",
-                value: t1 - t0,
-                unit: "ms",
-            }
-        )
+    verbose && console.log(`Holder address: ${holder_address}`);
+    if(config.write_measure){
+        var measure_data = {
+            actor: "owner",
+            action: "holder deployment",
+            type: "time",
+            value: t1 - t0,
+            unit: "ms",
+        };
+        config.write_measure(measure_data);
     }
 
     let build_dir = path.resolve(__dirname+"/build");
@@ -95,20 +65,18 @@ async function main(mode_chosen){
     );
     config.verbose && console.log("Deploying requester contract");
     t0 = performance.now();
-    let requester_address = await contractDeployer.deploy(options, requester_contract.abi, requester_contract.bin, [holder_address], "owner", "requester dep.");
+    let requester_address = await contractDeployer.deploy(options, requester_contract.abi, requester_contract.bin, [holder_address], "owner", "requester deployment");
     t1 = performance.now();
-    console.log(`Requester address: ${requester_address}`);
-    if(config.measure){
-        config.measure.write(
-            config.measure.file, 
-            {
-                actor: "owner",
-                action: "requester dep.",
-                type: "time",
-                value: t1 - t0,
-                unit: "ms",
-            }
-        )
+    verbose && console.log(`Requester address: ${requester_address}`);
+    if(config.write_measure){
+        var measure_data = {
+            actor: "owner",
+            action: "requester deployment",
+            type: "time",
+            value: t1 - t0,
+            unit: "ms",
+        };
+        config.write_measure(measure_data);
     }
 
     if(holder_setup.offchain){
@@ -132,29 +100,52 @@ async function main(mode_chosen){
     t0 = performance.now();
     let output = await requesterUI.useMethodWithOffChainRequest(method_info, options, input);
     t1 = performance.now();
-    if(config.measure){
-        config.measure.write(
-            config.measure.file, 
-            {
-                actor: "user",
-                action: "request",
-                type: "time",
-                value: t1 - t0,
-                unit: "ms",
-            }
-        )
+    if(config.write_measure){
+        var measure_data = {
+            actor: "user",
+            action: "request",
+            type: "time",
+            value: t1 - t0,
+            unit: "ms",
+        };
+        config.write_measure(measure_data);
     }
-    console.log(output);
+    verbose && console.log(output);
 }
 
-function loop(mode, repeat=5, i=0){
+function loop(mode, repeat, verbose, write_measure, i=0){
     if(i < repeat){
-        console.log(`mode ${mode} ${i+1} of ${repeat}`);
-        return main(mode).then(() => loop(mode, repeat, i+1)).catch(console.error)
+        verbose && console.log(`mode ${mode} ${i+1} of ${repeat}`);
+        return main(mode, verbose, write_measure).then(() => loop(mode, repeat, verbose, write_measure, i+1))
+    }
+    return new Promise((r, e)=>(r()))
+}
+
+function measureToCSV(mode, data){
+    return `${mode},${data.actor},${data.action},${data.type},${data.value},${data.unit}`;
+}
+
+let verbose = process.argv.includes('-v');
+let mode = process.argv.includes('--mode') && process.argv.indexOf('--mode') + 1< process.argv.length ? 
+    process.argv[process.argv.indexOf('--mode')+1] : 'onchain';
+let repeat = process.argv.includes('--repeat') && process.argv.indexOf('--repeat') + 1< process.argv.length ? 
+    Number(process.argv[process.argv.indexOf('--repeat')+1]) : 1
+
+var write_measure = false;
+if(process.argv.includes('--measure')){
+    let output_file =  process.argv.indexOf('-o') + 1< process.argv.length ? 
+    process.argv[process.argv.indexOf('-o')+1] : false;
+    if(output_file){
+        write_measure = (data) => fs.appendFile(output_file, measureToCSV(mode, data)+'\n',function (err) {})
+    }
+    if(process.argv.includes('-p')){
+        write_measure = (data) => console.log(measureToCSV(mode, data))
     }
 }
 
-loop("onchain")
-.then(() => loop("unverified"))
-.then(() => loop("zokrates"))
-.finally(() => setTimeout(process.exit, 5000));
+loop(mode, repeat, verbose, write_measure)
+.catch(e => {
+    console.log(e);
+    process.exit(1);
+})
+.finally(() => setTimeout(process.exit(0), 5000));

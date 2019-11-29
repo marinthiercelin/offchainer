@@ -36,17 +36,16 @@ module.exports = class ContractDeployer extends web3Connector.web3ConnectedClass
             data:holder_contract_bin, 
             arguments: deploy_args
         });
-        if(this.config.measure){
-            this.config.measure.write(
-                this.config.measure.file, 
-                {
-                    actor: actor,
-                    action: action,
-                    type: "size",
-                    value: (deploymentTx._deployData.length-2)/2,
-                    unit: "byte",
-                }
-            )
+        
+        if(this.config.write_measure){
+            var measure_data = {
+                actor: actor,
+                action: action,
+                type: "size",
+                value: (deploymentTx._deployData.length-2)/2,
+                unit: "byte",
+            };
+            this.config.write_measure(measure_data);
         }
         await this.web3.eth.personal.unlockAccount(deploy_options.account, deploy_options.password, deploy_options.unlockDuration);
         this.contract = await deploymentTx.send({
@@ -56,17 +55,15 @@ module.exports = class ContractDeployer extends web3Connector.web3ConnectedClass
             value: deploy_options.value,
         })
         .on("receipt", (receipt)=> {
-            if(this.config.measure){
-                this.config.measure.write(
-                    this.config.measure.file, 
-                    {
-                        actor: actor,
-                        action: action,
-                        type: "gas",
-                        value: receipt.gasUsed*deploy_options.gasPrice,
-                        unit: "wei",
-                    }
-                )
+            if(this.config.write_measure){
+                var measure_data = {
+                    actor: actor,
+                    action: action,
+                    type: "gas",
+                    value: receipt.gasUsed*deploy_options.gasPrice,
+                    unit: "wei",
+                };
+                this.config.write_measure(measure_data);
             }
         })
         .on("error", (error)=> {console.log(error); throw "Couldn't deploy contract"});
