@@ -48,8 +48,8 @@ async function main(mode_chosen, verbose, write_measure){
             actor: "owner",
             action: "holder deployment",
             type: "time",
-            value: t1 - t0,
-            unit: "ms",
+            value: (t1 - t0)/1000.0,
+            unit: "s.",
         };
         config.write_measure(measure_data);
     }
@@ -73,8 +73,8 @@ async function main(mode_chosen, verbose, write_measure){
             actor: "owner",
             action: "requester deployment",
             type: "time",
-            value: t1 - t0,
-            unit: "ms",
+            value: (t1 - t0)/1000.0,
+            unit: "s.",
         };
         config.write_measure(measure_data);
     }
@@ -105,8 +105,8 @@ async function main(mode_chosen, verbose, write_measure){
             actor: "user",
             action: "request",
             type: "time",
-            value: t1 - t0,
-            unit: "ms",
+            value: (t1 - t0)/1000.0,
+            unit: "s.",
         };
         config.write_measure(measure_data);
     }

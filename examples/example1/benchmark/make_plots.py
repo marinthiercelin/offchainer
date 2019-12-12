@@ -2,6 +2,7 @@ import sqlite3
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import math
 
 def make_cost_by_actor_plots (conn, modes, output_dir):
@@ -20,7 +21,7 @@ def plot_cost_for_actor(conn, modes, actor, cost_type, output_dir):
     title = '{}-cost for {}'.format(cost_type, actor)
     plot_cost_for_actionset(conn, modes, actor, possible_actions, cost_type, title, plot_file)
 
-def plot_cost_for_actionset(conn, modes, actor, possible_actions, cost_type, title, plot_file):
+def plot_cost_for_actionset(conn, modes, actor, possible_actions, cost_type, title, plot_file, w=2):
     where1 = "WHERE actor='{}' AND type='{}'".format(actor, cost_type)
     ind = np.arange(len(modes))    # the x locations for the groups
     width = 0.35       # the width of the bars: can also be len(x) sequence
@@ -31,6 +32,8 @@ def plot_cost_for_actionset(conn, modes, actor, possible_actions, cost_type, tit
     unit = units[0]
     bars=[]
     fig1, ax1 = plt.subplots()
+    fig1.set_size_inches(4, w)
+    ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
     for action in possible_actions:
         where2 = "WHERE actor='{}' AND type='{}' AND action='{}'".format(actor, cost_type, action)
         action_cost_per_mode_dir = get_value_dir(conn, 'mode', 'avg_value', where2)
@@ -41,7 +44,8 @@ def plot_cost_for_actionset(conn, modes, actor, possible_actions, cost_type, tit
         bars.append(ax1.bar(ind, action_cost_per_mode_list, width,bottom=cumulative_cost, yerr=action_std_per_mode_list))
         for i, action_cost in enumerate(action_cost_per_mode_list):
             cumulative_cost[i] += action_cost
-    ax1.set_title(title)
+    if title :
+        ax1.set_title(title)
     ax1.set_ylabel('{}-cost in {}'.format(cost_type, unit))
     ax1.set_xticks(ind)
     ax1.set_xticklabels(modes)
@@ -69,12 +73,12 @@ if __name__ == '__main__':
     output_dir = sys.argv[2]
     conn = sqlite3.connect(db_path)
     # make_cost_by_actor_plots(conn, modes, output_dir)
-    plot_cost_for_actionset(conn, modes, 'owner', ['holder deployment', 'requester deployment'], 'time', 'Time to deploy the application', output_dir+'/deployment_time.png')
-    plot_cost_for_actionset(conn, ['zokrates'], 'trusted 3rd party', ['key generation','verifier deployment'], 'time', 'Time to setup the verification', output_dir+'/setup_time.png')
-    plot_cost_for_actionset(conn, modes, 'owner', ['holder deployment', 'requester deployment'], 'gas', 'Gas used to deploy the application', output_dir+'/deployment_gas.png')
-    plot_cost_for_actionset(conn, ['zokrates'], 'trusted 3rd party', ['verifier deployment'], 'gas', 'Gas used to setup the verification', output_dir+'/setup_gas.png')
-    plot_cost_for_actionset(conn, modes, 'owner', ['proof','answer'], 'time', 'Time to answer a request', output_dir+'/answer_time.png')
-    plot_cost_for_actionset(conn, modes, 'owner', ['answer'], 'gas', 'Gas used to answer a request', output_dir+'/answer_gas.png')
-    plot_cost_for_actionset(conn, modes, 'user', ['request'], 'time', 'Time from request to output', output_dir+'/request_time.png')
-    plot_cost_for_actionset(conn, modes, 'user', ['request'], 'gas', 'Gas used to make a request', output_dir+'/request_gas.png')
+    plot_cost_for_actionset(conn, modes, 'owner', ['holder deployment', 'requester deployment', 'verifier deployment'], 'time', '', output_dir+'/deployment_time.png', 2.8)
+    # plot_cost_for_actionset(conn, ['zokrates'], 'trusted 3rd party', ['key generation','verifier deployment'], 'time', 'Time to setup the verification', output_dir+'/setup_time.png')
+    plot_cost_for_actionset(conn, modes, 'owner', ['holder deployment', 'requester deployment', 'verifier deployment'], 'gas', '', output_dir+'/deployment_gas.png')
+    # plot_cost_for_actionset(conn, ['zokrates'], 'trusted 3rd party', ['verifier deployment'], 'gas', 'Gas used to setup the verification', output_dir+'/setup_gas.png')
+    plot_cost_for_actionset(conn, modes, 'owner', ['proof','answer'], 'time', '', output_dir+'/answer_time.png')
+    plot_cost_for_actionset(conn, modes, 'owner', ['answer'], 'gas', '', output_dir+'/answer_gas.png')
+    plot_cost_for_actionset(conn, modes, 'user', ['request'], 'time', '', output_dir+'/request_time.png')
+    plot_cost_for_actionset(conn, modes, 'user', ['request'], 'gas', '', output_dir+'/request_gas.png')
     conn.close()

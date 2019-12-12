@@ -19,8 +19,8 @@ module.exports.setup = async function(secret, config, options){
             actor: "trusted 3rd party",
             action: "key generation",
             type: "time",
-            value: t1 - t0,
-            unit: "ms",
+            value: (t1 - t0)/1000.0,
+            unit: "s.",
         };
         config.write_measure(measure_data);
     }
@@ -30,11 +30,11 @@ module.exports.setup = async function(secret, config, options){
     t1 = performance.now();
     if(config.write_measure){
         var measure_data = {
-            actor: "trusted 3rd party",
+            actor: "owner",
             action: "verifier deployment",
             type: "time",
-            value: t1 - t0,
-            unit: "ms",
+            value: (t1 - t0)/1000.0,
+            unit: "s.",
         };
         config.write_measure(measure_data);
     }
