@@ -4,11 +4,11 @@ const fs = require('fs');
 const {performance} = require('perf_hooks');
 
 var options = {
-    account: "0x3fa68075aa987cf3b61ed52b54c936ab2007f38b",
-    password: "the_password",
+    account: "0x2db685e56b28f87e60fdd62eee66d8b7c5a9ba8e",
+    password: "",
     unlockDuration: 0,
     gas: 4712388,
-    gasPrice: 100000000000,
+    gasPrice: 10000000000,
     value: 0
 };
 

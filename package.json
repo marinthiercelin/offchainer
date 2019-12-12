@@ -8,7 +8,6 @@
     "bigint-buffer": "^1.1.5",
     "flatted": "^2.0.1",
     "regexp-quote": "0.0.0",
-    "solc": "^0.5.13",
     "web3": "^1.2.4",
     "winston": "^3.2.1"
   },

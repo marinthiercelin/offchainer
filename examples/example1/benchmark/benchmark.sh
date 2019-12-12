@@ -1,4 +1,4 @@
-nb_points=0; 
+nb_points=1; 
 data_dir='data';
 example_dir='..';
 example='example1.js'
@@ -6,7 +6,7 @@ data_file='measures.csv'
 #modes=("onchain" "unverified" "zokrates");
 modes=("zokrates");
 for mode in "${modes[@]}"; do
-    nodejs $example_dir/$example --mode $mode --measure -o $data_dir/$data_file --repeat $nb_points -p;
+    nodejs $example_dir/$example --mode $mode --measure -o $data_dir/$data_file --repeat $nb_points -v;
 done
 
 db_name='measures.db';

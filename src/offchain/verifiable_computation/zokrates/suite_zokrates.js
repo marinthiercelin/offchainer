@@ -74,6 +74,7 @@ module.exports = class ZokratesSuite extends AbstractSuite {
                 `-a ${this.secret} ${public_input} `+
                 `${key[0]} ${key[1]} ${key[2]} `+
                 `${comm[0]} ${comm[1]}`;
+        console.log(witness_cmd);
         await exec_command(witness_cmd);
         let proof_file = `${tmp_dir}/proof.json`;
         let proof_cmd = 
@@ -82,6 +83,7 @@ module.exports = class ZokratesSuite extends AbstractSuite {
                 `-w ${witness_file} `+
                 `-p ${this.setup_values.proving_key_file} `+
                 `-j ${proof_file}`;
+        console.log(proof_cmd);
         await exec_command(proof_cmd);
         let check_proof = await this.setup.verifyProof(proof_file);
         this.config.verbose && console.log(`The proof check returned ${check_proof}`);
