@@ -83,7 +83,7 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
                     gasPrice: send_options.gasPrice,
                     value: send_options.value
                 })
-                .on("receipt", this._dealWithReceiptCallBack(method_info, send_options, resolve, reject))
+                .once("receipt", this._dealWithReceiptCallBack(method_info, send_options, resolve, reject))
                 .on("confirmation", this._dealWithConfirmationCallBack(method_info, send_options, resolve, reject))
                 .on("error", (e) => reject(e));
             })
@@ -127,22 +127,48 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
     }
 
     _waitForOutputEvent(method_info, request_id, resolve, reject){
-        let options = {filter:{id:request_id}, fromBlock: 0, toBlock: 'latest'};
+        let options = { filter: { id: request_id }, fromBlock: 0, toBlock: 'latest' };
+        this._checkPastEvents(request_id, method_info, reject, resolve, options);
+        let callback = function(){
+            console.log("new block");
+            this._checkPastEvents(request_id, method_info, reject, resolve);
+        }
+        let sub = this.web3.eth.subscribe('newBlockHeaders', callback.bind(this));
+        this.config.verbose && console.log(`Waiting for event ${method_info.output_event} with id ${request_id}`);
+        this.contract.events[method_info.output_event](options)
+        .on("data", this._dealWithOutputEvent(reject, request_id, method_info, resolve) )
+        .on("error", (error)=>{
+            reject(error);
+        });
+        // this.contract.getPastEvents(method_info.output_event, options)
+        // .then( past_events => {
+        //     if(past_events.length > 0){
+        //         this.config.verbose && console.log(`The event ${method_info.output_event} with id ${request_id} was already emitted`);
+        //         this._dealWithOutputEvent(reject, request_id, method_info, resolve)(past_events[0]);
+        //     }else{
+        //         this.config.verbose && console.log(`Waiting for event ${method_info.output_event} with id ${request_id}`);
+        //         this.contract.events[method_info.output_event](options)
+        //         .on("data", this._dealWithOutputEvent(reject, request_id, method_info, resolve) )
+        //         .on("error", (error)=>{
+        //             reject(error);
+        //         });
+        //     }
+        // })
+        // .catch(reject);
+    }
+
+    _checkPastEvents(request_id, method_info, reject, resolve, options) {
         this.contract.getPastEvents(method_info.output_event, options)
-        .then( past_events => {
-            if(past_events.length > 0){
-                this.config.verbose && console.log(`The event ${method_info.output_event} with id ${request_id} was already emitted`);
-                this._dealWithOutputEvent(reject, request_id, method_info, resolve)(past_events[0]);
-            }else{
-                this.config.verbose && console.log(`Waiting for event ${method_info.output_event} with id ${request_id}`);
-                this.contract.events[method_info.output_event](options)
-                .on("data", this._dealWithOutputEvent(reject, request_id, method_info, resolve) )
-                .on("error", (error)=>{
-                    reject(error);
-                });
-            }
-        })
-        .catch(reject);
+            .then(past_events => {
+                if (past_events.length > 0) {
+                    console.log('some event');
+                    this.config.verbose && console.log(`The event ${method_info.output_event} with id ${request_id} was already emitted`);
+                    this._dealWithOutputEvent(reject, request_id, method_info, resolve)(past_events[0]);
+                }
+                else {
+                    console.log('no events');
+                }
+            }).catch(reject);
     }
 
     _dealWithOutputEvent(reject, request_id, method_info, resolve) {

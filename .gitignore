@@ -5,3 +5,4 @@ examples/test_network/devnet/*
 *.png
 *.db
 *.csv
+examples/test_network/devnet/keystore/UTC-*
