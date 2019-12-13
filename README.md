@@ -14,6 +14,9 @@ We take computations out of the smart contract, while ensuring correctness, usin
 
 ### benchmark
 
+- sqlite3 
+- python 
+- matplotlib
 
 ### test network
 - [geth](https://geth.ethereum.org/docs/install-and-build/installing-geth#install-on-ubuntu-via-ppas)
