@@ -98,8 +98,8 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                             actor: "owner",
                             action: "proof",
                             type: "time",
-                            value: t1 - t0,
-                            unit: "ms",
+                            value: (t1 - t0)/1000.0,
+                            unit: "s.",
                         };
                         this.config.write_measure(measure_time);
                         var measure_size = {
@@ -133,8 +133,8 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                             actor: "owner",
                             action: "answer",
                             type: "time",
-                            value: t1 - t0,
-                            unit: "ms",
+                            value: (t1 - t0)/1000.0,
+                            unit: "s.",
                         };
                         this.config.write_measure(measure_time);
                         var measure_data = {

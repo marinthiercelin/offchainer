@@ -88,10 +88,25 @@ module.exports = class ZokratesSuite extends AbstractSuite {
         let check_proof = await this.setup.verifyProof(proof_file);
         this.config.verbose && console.log(`The proof check returned ${check_proof}`);
         let formatted = formatZokratesOutput(proof_file);
+        deleteFolderRecursive(tmp_dir);
         return formatted;
     } 
 
 }
+
+function deleteFolderRecursive(path) {
+    if (fs.existsSync(path)) {
+      fs.readdirSync(path).forEach((file, index) => {
+        const curPath = Path.join(path, file);
+        if (fs.lstatSync(curPath).isDirectory()) { // recurse
+          deleteFolderRecursive(curPath);
+        } else { // delete file
+          fs.unlinkSync(curPath);
+        }
+      });
+      fs.rmdirSync(path);
+    }
+};
 
 function formatZokratesOutput(proof_file){
     let proof_json = JSON.parse(fs.readFileSync(proof_file));
