@@ -1,5 +1,5 @@
 pragma solidity >=0.4.21 <0.6.0;
-import "../interfaces.sol";
+import "./interfaces.sol";
 
 
 contract ZokratesOffChainHolder is OffChainSecretHolder {
