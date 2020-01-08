@@ -2,3 +2,6 @@ node_modules/
 examples/*/build/
 examples/test_network/devnet/*
 !examples/test_network/devnet/keystore
+*.csv
+*.db
+UTC--*
