@@ -85,8 +85,7 @@ contract OffChainSecretHolder is SecretHolder {
         emit NewAnswer(id, requests[id].input, output);
         requests[id].active = false;
         msg.sender.transfer(requests[id].reward);
-        bytes memory payload = abi.encodeWithSignature("callback(uint256,uint256)", id, output);
-        address(requester).call(payload);
+        requester.callback(id, output);
     }
 
     function verifyProof(uint input, uint output, bytes memory proof) internal returns (bool);

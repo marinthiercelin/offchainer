@@ -104,7 +104,7 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
                         value: answer_options.value
                     })
                     .on("error", console.error);
-                });
+                }).catch(console.log);
             }
         }
     }

@@ -148,7 +148,7 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
                     resolve(output_event.returnValues);
                 }
                 else {
-                    this.config.verbose && console.log("Received output event with wrong id");
+                    this.config.verbose && console.log(`Received output event with wrong id ${received_id}`);
                 }
             }
         };

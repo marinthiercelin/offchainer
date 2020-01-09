@@ -11,6 +11,9 @@ const fs = require('fs');
  * @returns {Object} an object with a commitment field and a key field.
  */
 function commit(value){
+    if(value.length > 34){
+        throw "Value is too long to hash";
+    }
     var buffer = Buffer.alloc(16);
     buffer.write(value, 'hex');
     var random_number = crypto.randomBytes(48);
