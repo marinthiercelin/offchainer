@@ -7,7 +7,7 @@ const exec_command = require('../../helpers/exec_command');
 function fromNumberTo128bitHex(number){
     let hex_str = BigInt(number).toString(16);
     let hex_length = hex_str.length;
-    return "0".repeat(128-hex_length)+hex_str;
+    return "0".repeat(32-hex_length)+hex_str;
 }
 
 
@@ -32,7 +32,7 @@ module.exports = class ZokratesSuite extends AbstractSuite {
     }
 
     _makeCommitment(commitment_pair){
-        if(typeof this.commitment_pair !=="undefined"){
+        if(typeof commitment_pair !=="undefined"){
             this.commitment_pair=commitment_pair;
         }else{
             let hex_str = fromNumberTo128bitHex(this.secret);
@@ -42,7 +42,9 @@ module.exports = class ZokratesSuite extends AbstractSuite {
         this.key_ints = this._hexToBigIntArray(this.commitment_pair.key, 3).map(x => x.toString());
     }
 
-    
+    getCommitmentPair(){
+        return this.commitment_pair;
+    }
 
     getHolderContractArgs(){
         return [this.commitment_ints, this.setup_values.verifier_address];

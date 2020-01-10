@@ -1,38 +1,31 @@
-const LocalOffChainHolder = require('./src/offchain/holder/LocalOffChainHolder');
-const OffChainHolderDeployer = require('./src/offchain/holder/LocalOffChainHolder');
-const RequesterUI = require('./src/offchain/requester/RequesterUI');
-const UnverifiedComputationSuite =  require('./src/offchain/verifiable_computation/unverified/UnverifiedComputationSuite');
-const ZokratesSuite =  require('./src/offchain/verifiable_computation/zokrates/suite_zokrates');
-const ZokratesSetup =  require('./src/offchain/verifiable_computation/zokrates/setup_zokrates');
-const HashBasedCommitment = require('./src/offchain/commitment/HashBasedCommitment');
-const ContractDeployer = require('./src/offchain/helpers/ContractDeployer');
-const SolidityCompiler = require('./src/offchain/helpers/solidity_compiler');
-const path = require("path");
-
-module.exports.holder = {};
-module.exports.holder.LocalOffChainHolder = LocalOffChainHolder;
-module.exports.holder.OffChainHolderDeployer = OffChainHolderDeployer;
-
-module.exports.requester = {};
-module.exports.requester.RequesterUI = RequesterUI;
-
-module.exports.verifiable_computation = {};
-module.exports.verifiable_computation.unverified = {};
-module.exports.verifiable_computation.unverified.Suite = UnverifiedComputationSuite;
-module.exports.verifiable_computation.unverified.HolderContractPath = path.resolve(__dirname+"/src/onchain/verifiable_computation/unverified_holder.sol");
-module.exports.verifiable_computation.unverified.HolderContractName = "UnverifiedOffchainHolder";
-
-module.exports.verifiable_computation.zokrates = {};
-module.exports.verifiable_computation.zokrates.Setup = ZokratesSetup;
-module.exports.verifiable_computation.zokrates.Suite = ZokratesSuite;
-module.exports.verifiable_computation.zokrates.HolderContractPath = path.resolve(__dirname+"/src/onchain/verifiable_computation/zokrates_holder.sol");
-module.exports.verifiable_computation.zokrates.HolderContractName = "ZokratesOffChainHolder";
-
-module.exports.commitment = {};
-module.exports.commitment.HashBasedCommitment = HashBasedCommitment;
-
-module.exports.helpers = {};
-module.exports.helpers.ContractDeployer = ContractDeployer;
-module.exports.helpers.SolidityCompiler = SolidityCompiler;
+const init = require('./src/tools/init');
+const generate = require('./src/tools/generate');
+const deploy = require('./src/tools/deploy');
+const listen = require('./src/tools/listen');
 
 
+module.exports.init = init;
+module.exports.generate = generate;
+module.exports.deploy = deploy;
+module.exports.listen = listen;
+module.exports.call = require('./src/tools/call');
+
+async function main(){
+    if(process.argv.length > 2){
+        const cmd = process.argv[2];
+        const call = module.exports[cmd];
+        if(call){
+            try{
+                const args = process.argv.slice(3);
+                await call(...args);            
+            }catch(e){
+                console.error(e);
+                process.exit(1);
+            }
+            return;
+        }
+    }
+    console.log(`Choose an option in ${Object.keys(module.exports).join(", ")}`)
+}
+
+main().finally(() => {console.log("bye!"); process.exit(0);});

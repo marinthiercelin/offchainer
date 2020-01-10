@@ -12,10 +12,10 @@ contract SecretRequester {
         _;
     }
 
-    function callback(uint id, uint output) public isFromHolder(){
+    function callback(uint256 id, uint256 output) public isFromHolder(){
         handleAnswer(id, output);
     }
-    function handleAnswer(uint id, uint output) internal;
+    function handleAnswer(uint256 id, uint256 output) internal;
 }
 
 contract SecretHolder {
@@ -38,56 +38,55 @@ contract SecretHolder {
         require(msg.sender == address(requester), "Request from unkown requester");
         _;
     }
-    function requestComputation(uint input)
+    function requestComputation(uint256 input)
         public
         payable
         isFromRequester()
-    returns (uint){
-        uint id = id_counter;
+    returns (uint256){
+        uint256 id = id_counter;
         id_counter++;
         makeComputation(id, input);
         return id;
     }
-    function makeComputation(uint id, uint input) internal;
+    function makeComputation(uint256 id, uint256 input) internal;
 }
 
 contract OnChainSecretHolder is SecretHolder {
     uint private secret;
-    constructor(uint secret_value) public {
+    constructor(uint256 secret_value) public {
         secret = secret_value;
     }
-    function makeComputation(uint id, uint input) internal{
+    function makeComputation(uint256 id, uint256 input) internal{
         uint output = computation(secret, input);
         requester.callback(id, output);
     }
-    function computation(uint secret_input, uint input) internal returns (uint);
+    function computation(uint256 secret_input, uint256 input) internal returns (uint256);
 }
 
 contract OffChainSecretHolder is SecretHolder {
     struct request {
-        uint input;
-        uint reward;
+        uint256 input;
+        uint256 reward;
         bool active;
     }
-    mapping(uint => request) private requests;
-    event NewRequest(uint id, uint input, uint reward);
-    event NewAnswer(uint id, uint input, uint output);
+    mapping(uint256 => request) private requests;
+    event NewRequest(uint256 id, uint256 input, uint256 reward);
+    event NewAnswer(uint256 id, uint256 input, uint256 output);
 
-    function makeComputation(uint id, uint input) internal {
+    function makeComputation(uint256 id, uint256 input) internal {
         requests[id] = request(input, msg.value, true);
         emit NewRequest(id, input, msg.value);
     }
 
-    function answerRequest(uint id, uint output, bytes memory proof) public{
+    function answerRequest(uint256 id, uint256 output, bytes memory proof) public{
         require(requests[id].active, "The answer wasn't needed");
         bool check = verifyProof(requests[id].input, output, proof);
         require(check, "The proof was incorrect");
         emit NewAnswer(id, requests[id].input, output);
         requests[id].active = false;
         msg.sender.transfer(requests[id].reward);
-        bytes memory payload = abi.encodeWithSignature("callback(uint256,uint256)", id, output);
-        address(requester).call(payload);
+        requester.callback(id, output);
     }
 
-    function verifyProof(uint input, uint output, bytes memory proof) internal returns (bool);
+    function verifyProof(uint256 input, uint256 output, bytes memory proof) internal returns (bool);
 }
