@@ -4,4 +4,3 @@ examples/*/build/
 *.db
 UTC--*
 *.png
-test_network/
