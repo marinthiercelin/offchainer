@@ -22,7 +22,7 @@ module.exports = async function(...args){
     let holder = new LocalOffChainHolder(config, suite);
     let holder_contract = await solidity_compiler.getCompiledContract(
         true,
-        config.requester_name, 
+        config.holder_name, 
         config.onchain_file, 
         setup_values.setup_dir
     );

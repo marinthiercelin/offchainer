@@ -20,6 +20,7 @@
         "gasPrice": 100000000000,
         "value": 0
     },
+    "proj_name":"__PROJECT_NAME__",
     "holder_name":"__PROJECT_NAME__Holder",
     "requester_name":"__PROJECT_NAME__Requester",
     "onchain_file":"./src/__PROJECT_NAME___onchain.sol",

@@ -70,8 +70,8 @@ module.exports = async function(...args){
         while(fs.existsSync(path.resolve(instances_dir + `/${count}_pub.json`))){
             count++;
         }
-        fs.writeFileSync(path.resolve(instances_dir + `/${count}_pub.json`), JSON.stringify(instance_pub));
-        fs.writeFileSync(path.resolve(instances_dir + `/${count}_key.json`), JSON.stringify(instance_key));
+        fs.writeFileSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_pub.json`), JSON.stringify(instance_pub));
+        fs.writeFileSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_key.json`), JSON.stringify(instance_key));
     }catch(e){
         console.log(e)
     }
