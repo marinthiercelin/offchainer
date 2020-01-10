@@ -1,0 +1,39 @@
+
+eth.accounts
+let instance = aw
+loadScript('/home/marin/Documents/Studies/PDM/code/offchainer/examples/example1/build/Example1Requester.abi');
+var contract_abi
+contract_abi
+loadScript('/home/marin/Documents/Studies/PDM/code/offchainer/examples/example1/build/Example1Requester.abi');
+contract_abi
+loadScript('/home/marin/Documents/Studies/PDM/code/offchainer/examples/example1/build/Example1Requester.js');
+requester_abi
+loadScript('../example1/build/Example1Requester.js');
+loadScript('/home/marin/Documents/Studies/PDM/code/offchainer/examples/example1/build/Example1Requester.js');
+getABI
+getABI()
+let abi = getABI();
+abi = getABI();
+abi
+contract = new web3.eth.contract(abi, '0x8CADC2Ca5415b994d2b6494a87F86E73a13d006e')
+contract
+contract.pastEvents()
+contract.events.pastEvents()
+contract.events
+contract
+instance = contract.at('0x8CADC2Ca5415b994d2b6494a87F86E73a13d006e')
+instance
+instance.events
+instance = await contract.at('0x8CADC2Ca5415b994d2b6494a87F86E73a13d006e')
+instance
+contract = new web3.eth.Contract(abi, '0x8CADC2Ca5415b994d2b6494a87F86E73a13d006e')
+web3.eth
+instance = web3.eth.contract(abi).at('0x8CADC2Ca5415b994d2b6494a87F86E73a13d006e')
+instance
+instance.allEvents()
+instance.allEvents().get(console.log)
+instance.allEvents().watch(console.log)
+instance.allEvents().get(console.log)
+instance = web3.eth.contract(abi).at('0x41BA30379F22C6acabF664497b8BB1DB49CbFb11')
+instance.allEvents().watch(console.log)
+eth.accounts

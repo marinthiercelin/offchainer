@@ -1,6 +1,5 @@
 node_modules/
 examples/*/build/
-test_network/devnet/*
 !test_network/devnet/keystore
 *.csv
 *.db
