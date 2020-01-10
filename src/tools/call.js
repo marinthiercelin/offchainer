@@ -30,7 +30,7 @@ module.exports = async function(...args){
         output_event: "End",
         block_timeout: call_options.block_timeout,
     };
-    let output = await requesterUI.useMethodWithOffChainRequest(method_info, call_options, call_args);
+    let output = await requesterUI.useMethodWithOffChainRequest(method_info, call_options, ...call_args);
     console.log(output);
     return output;
 }

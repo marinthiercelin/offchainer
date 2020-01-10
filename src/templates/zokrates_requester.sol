@@ -8,25 +8,25 @@ contract ZokratesRequester is SecretRequester {
         public
     {}
 
-    event Start(uint id);
-    event End(uint id, uint result);
+    event Start(uint256 id);
+    event End(uint256 id, uint256 result);
 
-    function start(uint user_data) public returns (uint){
+    function start(uint256 user_data) public returns (uint256){
         // ==== modify here ====
 
         uint f_input = user_data;
         
         // =====================
         // call for a computation of f(secret, f_input)
-        uint id = secret_holder.requestComputation(f_input);
+        uint256 id = secret_holder.requestComputation(f_input);
         emit Start(id);
     }
 
-    function handleAnswer(uint id, uint output) internal {
+    function handleAnswer(uint256 id, uint256 output) internal {
         // receive the value f(secret, f_input)
         // ==== modify here ====
 
-        uint result = output;
+        uint256 result = output;
 
         // =====================
         emit End(id, result);
