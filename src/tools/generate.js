@@ -2,7 +2,7 @@ const exec_command = require('../offchain/helpers/exec_command');
 const fs = require('fs');
 const commitment_scheme = require('../offchain/commitment/HashBasedCommitment');
 module.exports = async function(){
-    const config = JSON.parse(fs.readFileSync('./src/config.json'));
+    const config = JSON.parse(fs.readFileSync('./config.json'));
     const setup_values = config.setup_values;
     if (!fs.existsSync(setup_values.setup_dir)){
         fs.mkdirSync(setup_values.setup_dir, {recursive:true});

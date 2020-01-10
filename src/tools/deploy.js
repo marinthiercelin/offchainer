@@ -13,7 +13,7 @@ module.exports = async function(...args){
     const account = args[0];
     const password = args[1];
     const secret = parseInt(args[2]);
-    const config = JSON.parse(fs.readFileSync('./src/config.json'));
+    const config = JSON.parse(fs.readFileSync('./config.json'));
     var deploy_options = {
         ...config.deploy_options,
         account: account,
@@ -38,15 +38,15 @@ module.exports = async function(...args){
         let suite = new ZokratesSuite(config, zokratesSetup, secret, commitment_scheme);
         let holder = await solidity_compiler.getCompiledContract(
             true,
-            'ZokratesOffChainHolder', 
-            './src/zokrates_holder.sol', 
+            config.holder_name, 
+            config.onchain_file, 
             setup_values.setup_dir
         );
         let holder_address = await contractDeployer.deploy(deploy_options, holder.abi, holder.bin, suite.getHolderContractArgs());
         let requester = await solidity_compiler.getCompiledContract(
-            true,
-            'ZokratesRequester', 
-            './src/zokrates_requester.sol', 
+            false,
+            config.requester_name, 
+            config.onchain_file,  
             setup_values.setup_dir
         );
         let requester_address = await contractDeployer.deploy(deploy_options, requester.abi, requester.bin, [holder_address]);

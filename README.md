@@ -20,8 +20,8 @@ See the [paper](#/docs/paper.pdf) for a formal description of the goal of this l
 In your project workspace:
 - run `npm install git+https://github.com/marinthiercelin/offchainer.git`
 - run `nodejs offchainer init <project_name>`
-- write your public code in `./src/<project_name>_requester.sol`
-- write your private code in `./src/<project_name>_private.zok`.
+- write your onchain code in `./src/<project_name>_onchain.sol`
+- write your offchain code in `./src/<project_name>_offchain.zok`.
 - generate the SNARKS keys with:
 `nodejs offchainer generate`
 
@@ -36,7 +36,7 @@ They can be unlocked with password : 'the_password'.
 
 To start the test network, run: 
 
-`nodejs offchainer test`
+`nodejs node_modules/offchainer test`
 
 ### Configuration
 
@@ -45,17 +45,17 @@ You can configure the project by modifying `./src/config.json`
 ### Execution
 The owner can deploy the contracts with: 
 
-`nodejs offchainer deploy <account> <password> <secret>`
+`nodejs node_modules/offchainer deploy <account> <password> <secret>`
 
 This will generate 2 files in the folder `instances` a public file that can be shared with the users, and a key file that needs to stay private.
 
 The owner can start listening for private computations requests with: 
 
-`nodejs offchainer listen <instance_pub> <instance_key> <account> <password>`
+`nodejs node_modules/offchainer listen <instance_pub> <instance_key> <account> <password>`
 
 The user can interact with the contract using:
 
-`nodejs offchainer call <instance_pub> <account>  <password> <arg1> <arg2> etc.`
+`nodejs node_modules/offchainer call <instance_pub> <account>  <password> <arg1> <arg2> etc.`
 
 
 

@@ -1,6 +1,38 @@
 pragma solidity >=0.4.21 <0.6.0;
 import "./interfaces.sol";
 
+contract __PROJECT_NAME__Requester is SecretRequester {
+
+    constructor(SecretHolder secret_holder)
+        SecretRequester(secret_holder)
+        public
+    {}
+
+    event Start(uint256 id);
+    event End(uint256 id, uint256 result);
+
+    function start(uint256 user_data) public returns (uint256){
+        // ==== modify here ====
+
+        uint f_input = user_data;
+        
+        // =====================
+        // call for a computation of f(secret, f_input)
+        uint256 id = secret_holder.requestComputation(f_input);
+        emit Start(id);
+    }
+
+    function handleAnswer(uint256 id, uint256 output) internal {
+        // receive the value f(secret, f_input)
+        // ==== modify here ====
+
+        uint256 result = output;
+
+        // =====================
+        emit End(id, result);
+    }
+}
+
 interface VerifierContract{
     function verifyTx(
         uint[2] calldata a,
@@ -10,7 +42,7 @@ interface VerifierContract{
     ) external returns (bool r);
 }
 
-contract ZokratesOffChainHolder is OffChainSecretHolder {
+contract __PROJECT_NAME__Holder is OffChainSecretHolder {
 
     uint256[2] public commitment;
     address public verifier_contract;
@@ -37,12 +69,6 @@ contract ZokratesOffChainHolder is OffChainSecretHolder {
         verifier_inputs[1] = commitment[0];
         verifier_inputs[2] = commitment[1];
         verifier_inputs[3] = output;
-        // bytes memory payload = abi.encodeWithSignature(verifyTxSignature, proof_struct.a, proof_struct.b, proof_struct.c, verifier_inputs);
-        // (bool success, bytes memory returnData) = verifier_contract.call(payload);
-        // require(success, "The verification method failed");
-        // require(returnData.length == 32, "The verification method should return 32 bytes");
-        // uint256 result = bytesToInt(returnData, 0);
-        // return result != 0;
         bool check = VerifierContract(verifier_contract).verifyTx(proof_struct.a, proof_struct.b, proof_struct.c, verifier_inputs);
         return check;
     }
@@ -72,6 +98,3 @@ contract ZokratesOffChainHolder is OffChainSecretHolder {
         return uint256(out);
     }
 }
-
-
-

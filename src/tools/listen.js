@@ -8,7 +8,7 @@ module.exports = async function(...args){
     if(args.length < 4){
         throw "Need to provide the instance public and private values, the account and the password"
     }
-    const config = JSON.parse(fs.readFileSync('./src/config.json'));
+    const config = JSON.parse(fs.readFileSync('./config.json'));
     var setup_values = config.setup_values;
     const instance_pub = JSON.parse(fs.readFileSync(args[0]));
     const instance_key = JSON.parse(fs.readFileSync(args[1]));
@@ -21,9 +21,9 @@ module.exports = async function(...args){
     let suite = new ZokratesSuite(config, zokratesSetup, instance_key.secret, commitment_scheme, commitment_pair=commitment_pair);
     let holder = new LocalOffChainHolder(config, suite);
     let holder_contract = await solidity_compiler.getCompiledContract(
-        false,
-        'ZokratesOffChainHolder', 
-        './src/zokrates_holder.sol', 
+        true,
+        config.requester_name, 
+        config.onchain_file, 
         setup_values.setup_dir
     );
     await holder.connect(holder_contract.abi, instance_pub.holder_address);

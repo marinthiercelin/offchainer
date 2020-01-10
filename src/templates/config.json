@@ -20,9 +20,12 @@
         "gasPrice": 100000000000,
         "value": 0
     },
+    "holder_name":"__PROJECT_NAME__Holder",
+    "requester_name":"__PROJECT_NAME__Requester",
+    "onchain_file":"./src/__PROJECT_NAME___onchain.sol",
     "setup_values":{
         "setup_dir":"./build",
-        "original_zokrates_file":"./src/f_computation.zok",
+        "original_zokrates_file":"./src/__PROJECT_NAME___offchain.zok",
         "modified_zokrates_file":"./build/modified.zok",
         "compiled_file":"./build/compiled",
         "verification_key_file":"./build/verification.key",
