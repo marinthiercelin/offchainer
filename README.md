@@ -35,8 +35,8 @@ We've provided a script to generate a test private network with 3 accounts with 
 They can be unlocked with password : 'the_password'.
 
 To start the test network, run: 
-
-`nodejs node_modules/offchainer test`
+- `cd /nodes_modules/offchainer/test_network`
+- `./start.sh`
 
 ### Configuration
 
