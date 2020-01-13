@@ -111,6 +111,7 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
                 reject("Could not find the request id");
             }else{
                 let request_id = parseInt(input_event.returnValues.id);
+                this.config.verbose && console.log(`Request Id: ${request_id}`);
                 this._waitForOutputEvent(method_info, request_id, resolve, reject);
             }
         }
@@ -121,18 +122,17 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
         this.contract.getPastEvents(method_info.output_event, options)
         .then( past_events => {
             if(past_events.length > 0){
-                this.config.verbose && console.log(`The event ${method_info.output_event} with id ${request_id} was already emitted`);
-                this._dealWithOutputEvent(reject, request_id, method_info, resolve)(past_events[0]);
-            }else{
-                this.config.verbose && console.log(`Waiting for event ${method_info.output_event} with id ${request_id}`);
-                this.contract.events[method_info.output_event](options)
-                .on("data", this._dealWithOutputEvent(reject, request_id, method_info, resolve) )
-                .on("error", (error)=>{
-                    reject(error);
-                });
+                let event_handler = this._dealWithOutputEvent(reject, request_id, method_info, resolve);
+                past_events.forEach(event_handler);
             }
         })
         .catch(reject);
+        this.config.verbose && console.log(`Waiting for event ${method_info.output_event} with id ${request_id}`);
+        this.contract.events[method_info.output_event](options)
+        .on("data", this._dealWithOutputEvent(reject, request_id, method_info, resolve) )
+        .on("error", (error)=>{
+            reject(error);
+        });
     }
 
     _dealWithOutputEvent(reject, request_id, method_info, resolve) {
