@@ -41,14 +41,10 @@ function addCommitmentToZokrates(zokrates_filepath, modified_filepath){
     if(main_start < 0){
         throw "Could not find the main function in the zokrates file";
     }
-    var main_end = original_content.substring(main_start).search(/\n\n/);
-    if(main_end < 0){
-        main_end = original_content.length;
-    }
+    main_end = original_content.length;
     let before_main = original_content.substring(0, main_start);
     let original_main = original_content.substring(main_start, main_end);
     let after_main= original_content.substring(main_end, original_content.length);
-
     var include_str = 'import "hashes/sha256/512bitPacked" as sha256packed\n';
 
     var commit_str = `\n
@@ -64,7 +60,6 @@ def checkCommitment(private field secret_input, private field[3] commitment_key,
     let modified_main = `def main(private field secret_input, field public_input, private field[3] commitment_key, field[2] commitment) -> (field):
     field isCommitted = checkCommitment(secret_input, commitment_key, commitment)
     isCommitted == 1\n` + main_original_body;
-
     let modified_final_str = include_str + before_main + commit_str + modified_main + after_main;
     fs.writeFileSync(modified_filepath, modified_final_str);
 }
