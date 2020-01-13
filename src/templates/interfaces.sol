@@ -12,10 +12,10 @@ contract SecretRequester {
         _;
     }
 
-    function callback(uint256 id, uint256 output) public isFromHolder(){
-        handleAnswer(id, output);
+    function callback(uint256 id, uint256 input, uint256 output) public isFromHolder(){
+        handleAnswer(id, input, output);
     }
-    function handleAnswer(uint256 id, uint256 output) internal;
+    function handleAnswer(uint256 id, uint256 input, uint256 output) internal;
 }
 
 contract SecretHolder {
@@ -58,7 +58,7 @@ contract OnChainSecretHolder is SecretHolder {
     }
     function makeComputation(uint256 id, uint256 input) internal{
         uint output = computation(secret, input);
-        requester.callback(id, output);
+        requester.callback(id, input, output);
     }
     function computation(uint256 secret_input, uint256 input) internal returns (uint256);
 }
@@ -85,7 +85,7 @@ contract OffChainSecretHolder is SecretHolder {
         emit NewAnswer(id, requests[id].input, output);
         requests[id].active = false;
         msg.sender.transfer(requests[id].reward);
-        requester.callback(id, output);
+        requester.callback(id, requests[id].input, output);
     }
 
     function verifyProof(uint256 input, uint256 output, bytes memory proof) internal returns (bool);

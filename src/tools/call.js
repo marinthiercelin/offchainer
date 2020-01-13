@@ -9,7 +9,8 @@ module.exports = async function(...args){
     const instance_pub = JSON.parse(fs.readFileSync(args[0]));
     const account = args[1];
     const password = args[2];
-    const call_args = args.slice(3);
+    const method_name = args[3]
+    const call_args = args.slice(4);
     let requester_contract = await solidity_compiler.getCompiledContract(
         true,
         config.requester_name, 
@@ -25,7 +26,7 @@ module.exports = async function(...args){
         password: password
     };
     var method_info = {
-        name: "start",
+        name: method_name,
         input_event: "Start",
         output_event: "End",
         block_timeout: call_options.block_timeout,

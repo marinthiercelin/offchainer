@@ -9,12 +9,12 @@ contract __PROJECT_NAME__Requester is SecretRequester {
     {}
 
     event Start(uint256 id);
-    event End(uint256 id, uint256 result);
+    event End(uint256 id, uint256 input, uint256 result);
 
-    function start(uint256 user_data) public returns (uint256){
+    function start(uint256 input) public returns (uint256){
         // ==== modify here ====
 
-        uint f_input = user_data;
+        uint f_input = input;
         
         // =====================
         // call for a computation of f(secret, f_input)
@@ -22,14 +22,14 @@ contract __PROJECT_NAME__Requester is SecretRequester {
         emit Start(id);
     }
 
-    function handleAnswer(uint256 id, uint256 output) internal {
+    function handleAnswer(uint256 id, uint256 input, uint256 output) internal {
         // receive the value f(secret, f_input)
         // ==== modify here ====
 
         uint256 result = output;
 
         // =====================
-        emit End(id, result);
+        emit End(id, input, result);
     }
 }
 

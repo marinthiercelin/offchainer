@@ -13,6 +13,7 @@ module.exports = async function(...args){
     const account = args[0];
     const password = args[1];
     const secret = parseInt(args[2]);
+    const requester_args = args.slice(3);
     const config = JSON.parse(fs.readFileSync('./config.json'));
     var deploy_options = {
         ...config.deploy_options,
@@ -49,7 +50,7 @@ module.exports = async function(...args){
             config.onchain_file,  
             setup_values.setup_dir
         );
-        let requester_address = await contractDeployer.deploy(deploy_options, requester.abi, requester.bin, [holder_address]);
+        let requester_address = await contractDeployer.deploy(deploy_options, requester.abi, requester.bin, [holder_address, ...requester_args]);
         let commitment_pair = suite.getCommitmentPair();
         let instance_pub = {
             owner_account: account,
@@ -67,7 +68,7 @@ module.exports = async function(...args){
             fs.mkdirSync(instances_dir, {recursive:true});
         }
         var count=0;
-        while(fs.existsSync(path.resolve(instances_dir + `/${count}_pub.json`))){
+        while(fs.existsSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_pub.json`))){
             count++;
         }
         fs.writeFileSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_pub.json`), JSON.stringify(instance_pub));
