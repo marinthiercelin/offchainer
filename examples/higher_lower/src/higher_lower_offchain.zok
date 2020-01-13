@@ -1,0 +1,38 @@
+// Here we compare the secret_value and the guess
+// We return 0 if secret_value > guess 
+// 1 if secret_value <= guess
+def compareAll(private field secret_value, field guess) -> (field):
+    field final_answer = 0
+    field answer = 0
+    // We do this to avoid using > and < that are expensive
+    for field i in 0..11 do
+        answer = if i==secret_value then 1 else answer fi 
+        final_answer = if i==guess then answer else final_answer fi
+    endfor
+    return final_answer
+
+// We call compareAll as a sub routine, 
+// It returns 2 if secret_value == guess, 
+// otherwise it returns the values of compareAll
+def computeAnswer(private field secret_value, field guess) -> (field):
+    field answer = if secret_value == guess then 2 else compareAll(secret_value, guess) fi
+    return answer
+
+// We check that the secret_value is in the range [0..10]
+def checkRange(private field secret_value) -> (field):
+    field answer = 0
+    for field i in 0..11 do
+        answer = if i == secret_value then 1 else answer fi
+    endfor
+    return answer
+
+// We check that the secret_value is in range 
+// AND we compare the secret_value to the guess and return the answer
+def main(private field secret_input, field public_input) -> (field):
+    field isInRange = checkRange(secret_input)
+    isInRange == 1
+    field computed_answer = computeAnswer(secret_input, public_input)
+    return computed_answer 
+
+
+

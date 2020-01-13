@@ -45,7 +45,7 @@ You can configure the project by modifying `./src/config.json`
 ### Execution
 The owner can deploy the contracts with: 
 
-`nodejs node_modules/offchainer deploy <account> <password> <secret>`
+`nodejs node_modules/offchainer deploy <account> <password> <secret> <arg1> <arg2> etc.`
 
 This will generate 2 files in the folder `instances` a public file that can be shared with the users, and a key file that needs to stay private.
 
@@ -55,7 +55,7 @@ The owner can start listening for private computations requests with:
 
 The user can interact with the contract using:
 
-`nodejs node_modules/offchainer call <instance_pub> <account>  <password> <arg1> <arg2> etc.`
+`nodejs node_modules/offchainer call <instance_pub> <account> <password> <method_name> <arg1> <arg2> etc.`
 
 
 

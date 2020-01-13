@@ -1,0 +1,37 @@
+{
+    "node_http_rpc":"http://127.0.0.1:8545",
+    "node_ws_rpc":"ws://127.0.0.1:8546",
+    "verbose":true,
+    "deploy_options":{
+        "unlockDuration": 0,
+        "gas": 4712388,
+        "gasPrice": 100000000000,
+        "value": 0
+    },
+    "listen_options":{
+        "unlockDuration": 0,
+        "gas": 4712388,
+        "gasPrice": 100000000000,
+        "value": 0
+    },
+    "call_options":{
+        "unlockDuration": 0,
+        "gas": 4712388,
+        "gasPrice": 100000000000,
+        "value": 0
+    },
+    "proj_name":"higher_lower",
+    "holder_name":"higher_lowerHolder",
+    "requester_name":"higher_lowerRequester",
+    "onchain_file":"./src/higher_lower_onchain.sol",
+    "setup_values":{
+        "setup_dir":"./build",
+        "original_zokrates_file":"./src/higher_lower_offchain.zok",
+        "modified_zokrates_file":"./build/modified.zok",
+        "compiled_file":"./build/compiled",
+        "verification_key_file":"./build/verification.key",
+        "proving_key_file":"./build/proving.key",
+        "verifier_contract":"./build/verifier.sol"
+    },
+    "instances_dir":"./instances"
+}
