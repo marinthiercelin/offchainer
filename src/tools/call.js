@@ -1,6 +1,8 @@
 const fs = require('fs');
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
 const RequesterUI = require('../offchain/requester/RequesterUI');
+const Web3 = require('web3');
+
 module.exports = async function(...args){
     if(args.length < 3){
         throw "Need to provide the instance public values, the account, the password and the call arguments"
@@ -9,8 +11,9 @@ module.exports = async function(...args){
     const instance_pub = JSON.parse(fs.readFileSync(args[0]));
     const account = args[1];
     const password = args[2];
-    const method_name = args[3]
-    const call_args = args.slice(4);
+    const method_name = args[3];
+    const call_value = args[4];
+    const call_args = args.slice(5);
     let requester_contract = await solidity_compiler.getCompiledContract(
         true,
         config.requester_name, 
@@ -23,8 +26,9 @@ module.exports = async function(...args){
         ...config.call_options,
         block_timeout:undefined,
         account: account,
-        password: password
+        password: password,
     };
+    call_options.value = Web3.utils.toWei( call_value, 'ether');
     var method_info = {
         name: method_name,
         input_event: "Start",

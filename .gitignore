@@ -4,5 +4,5 @@ examples/*/build/
 *.db
 UTC--*
 *.png
-test_network/devnet/geth/
+test_network/
 examples/higher_lower/instances/

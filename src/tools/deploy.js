@@ -5,6 +5,7 @@ const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
 const fs = require('fs');
 const path = require('path');
+const Web3 = require('web3');
 
 module.exports = async function(...args){
     if(args.length < 2){
@@ -12,13 +13,14 @@ module.exports = async function(...args){
     }
     const account = args[0];
     const password = args[1];
-    const secret = parseInt(args[2]);
-    const requester_args = args.slice(3);
+    const secret = parseInt(args[3]);
+    const requester_value = args[2];
+    const requester_args = args.slice(4);
     const config = JSON.parse(fs.readFileSync('./config.json'));
     var deploy_options = {
         ...config.deploy_options,
         account: account,
-        password: password
+        password: password,
     };
     var setup_values = config.setup_values;
     try{
@@ -50,6 +52,7 @@ module.exports = async function(...args){
             config.onchain_file,  
             setup_values.setup_dir
         );
+        deploy_options.value = Web3.utils.toWei( requester_value, 'ether');
         let requester_address = await contractDeployer.deploy(deploy_options, requester.abi, requester.bin, [holder_address, ...requester_args]);
         let commitment_pair = suite.getCommitmentPair();
         let instance_pub = {
