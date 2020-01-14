@@ -26,9 +26,8 @@ module.exports = async function(config, account, password, requester_value, secr
             setup_values.setup_dir
         );
         let verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin);
-        let zokratesSetup = new ZokratesSetup(config);
         setup_values = {...setup_values, verifier_address:verifier_address};
-        zokratesSetup.usePastSetup(setup_values);
+        let zokratesSetup = new ZokratesSetup(config, setup_values);
         let suite = new ZokratesSuite(config, zokratesSetup, secret, commitment_scheme);
         let holder = await solidity_compiler.getCompiledContract(
             true,

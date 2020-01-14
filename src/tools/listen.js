@@ -8,9 +8,8 @@ module.exports = async function(config, account, password, instance_pub_path, in
     var setup_values = config.setup_values;
     const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));
     const instance_key = JSON.parse(fs.readFileSync(instance_key_path));
-    let zokratesSetup = new ZokratesSetup(config);
     setup_values = {...setup_values, verifier_address:instance_pub.verifier_address};
-    zokratesSetup.usePastSetup(setup_values);
+    let zokratesSetup = new ZokratesSetup(config, setup_values);
     let commitment_pair = {commitment: instance_pub.commitment, key: instance_key.key};
     let suite = new ZokratesSuite(config, zokratesSetup, instance_key.secret, commitment_scheme, commitment_pair=commitment_pair);
     let holder = new LocalOffChainHolder(config, suite);
