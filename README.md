@@ -14,11 +14,11 @@ Marin Thiercelin, Chen-Mou Cheng, Atsuko Miyaji, Serge Vaudenay
 
 ### Library dependencies:
 - [nodejs](https://github.com/nodesource/distributions/blob/master/README.md#debinstall) v12 or above
-- [solc](https://solidity.readthedocs.io/en/v0.5.13/installing-solidity.html#binary-packages) v 0.5.13 to 0.5.16 (Bug with versions 0.6.1)
+- [solc](https://solidity.readthedocs.io/en/v0.5.13/installing-solidity.html#binary-packages) v0.6.1 or above
 - [zokrates](https://zokrates.github.io/gettingstarted.html)
 
-Nb: Current Zokrates version doesn't work with latest solc version (0.6.1),
-you should downgrade solc to 0.5.*
+Nb: Current Zokrates version doesn't work with latest solc version (0.6.1), you should use the develop version
+of zokrates and build from source
 
 ### Test network dependencies:
 - [geth](https://geth.ethereum.org/docs/install-and-build/installing-geth#install-on-ubuntu-via-ppas)
