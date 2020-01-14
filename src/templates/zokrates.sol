@@ -15,7 +15,6 @@ contract __PROJECT_NAME__Requester is SecretRequester {
         // ==== modify here ====
 
         uint f_input = input;
-        
         // =====================
         // call for a computation of f(secret, f_input)
         uint256 id = secret_holder.requestComputation(f_input);
@@ -59,7 +58,6 @@ contract __PROJECT_NAME__Holder is OffChainSecretHolder {
         uint[2] c;
     }
 
-    
 
     // We always return true, hence the computation is unverified
     function verifyProof(uint input, uint output, bytes memory proof) internal override returns (bool){
