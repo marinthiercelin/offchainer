@@ -1,6 +1,6 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.6.1;
 
-contract SecretRequester {
+abstract contract SecretRequester {
 
     SecretHolder secret_holder;
     constructor(SecretHolder sh) internal {
@@ -15,10 +15,10 @@ contract SecretRequester {
     function callback(uint256 id, uint256 input, uint256 output) public isFromHolder(){
         handleAnswer(id, input, output);
     }
-    function handleAnswer(uint256 id, uint256 input, uint256 output) internal;
+    function handleAnswer(uint256 id, uint256 input, uint256 output) internal virtual;
 }
 
-contract SecretHolder {
+abstract contract SecretHolder {
 
     SecretRequester public requester;
     bool is_registered;
@@ -48,22 +48,22 @@ contract SecretHolder {
         makeComputation(id, input);
         return id;
     }
-    function makeComputation(uint256 id, uint256 input) internal;
+    function makeComputation(uint256 id, uint256 input) internal virtual;
 }
 
-contract OnChainSecretHolder is SecretHolder {
+abstract contract OnChainSecretHolder is SecretHolder {
     uint private secret;
     constructor(uint256 secret_value) public {
         secret = secret_value;
     }
-    function makeComputation(uint256 id, uint256 input) internal{
+    function makeComputation(uint256 id, uint256 input) internal override{
         uint output = computation(secret, input);
         requester.callback(id, input, output);
     }
-    function computation(uint256 secret_input, uint256 input) internal returns (uint256);
+    function computation(uint256 secret_input, uint256 input) internal virtual returns (uint256);
 }
 
-contract OffChainSecretHolder is SecretHolder {
+abstract contract OffChainSecretHolder is SecretHolder {
     struct request {
         uint256 input;
         uint256 reward;
@@ -73,7 +73,7 @@ contract OffChainSecretHolder is SecretHolder {
     event NewRequest(uint256 id, uint256 input, uint256 reward);
     event NewAnswer(uint256 id, uint256 input, uint256 output);
 
-    function makeComputation(uint256 id, uint256 input) internal {
+    function makeComputation(uint256 id, uint256 input) internal override{
         requests[id] = request(input, msg.value, true);
         emit NewRequest(id, input, msg.value);
     }
@@ -88,5 +88,5 @@ contract OffChainSecretHolder is SecretHolder {
         requester.callback(id, requests[id].input, output);
     }
 
-    function verifyProof(uint256 input, uint256 output, bytes memory proof) internal returns (bool);
+    function verifyProof(uint256 input, uint256 output, bytes memory proof) virtual internal returns (bool);
 }

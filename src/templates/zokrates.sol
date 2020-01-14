@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.6.1;
 import "./interfaces.sol";
 
 contract __PROJECT_NAME__Requester is SecretRequester {
@@ -22,7 +22,7 @@ contract __PROJECT_NAME__Requester is SecretRequester {
         emit Start(id);
     }
 
-    function handleAnswer(uint256 id, uint256 input, uint256 output) internal {
+    function handleAnswer(uint256 id, uint256 input, uint256 output) internal override {
         // receive the value f(secret, f_input)
         // ==== modify here ====
 
@@ -62,7 +62,7 @@ contract __PROJECT_NAME__Holder is OffChainSecretHolder {
     
 
     // We always return true, hence the computation is unverified
-    function verifyProof(uint input, uint output, bytes memory proof) internal returns (bool){
+    function verifyProof(uint input, uint output, bytes memory proof) internal override returns (bool){
         Proof memory proof_struct = castProof(proof);
         uint256[4] memory verifier_inputs;
         verifier_inputs[0] = input;
