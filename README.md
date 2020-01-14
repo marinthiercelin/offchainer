@@ -22,8 +22,6 @@ In your project workspace:
 - run `nodejs offchainer init <project_name>`
 - write your onchain code in `./src/<project_name>_onchain.sol`
 - write your offchain code in `./src/<project_name>_offchain.zok`.
-- generate the SNARKS keys with:
-`nodejs offchainer generate`
 
 ### Ethereum network
 You need to have a running ethereum node on your machine.
@@ -35,7 +33,7 @@ We've provided a script to generate a test private network with 3 accounts with 
 They can be unlocked with password : 'the_password'.
 
 To start the test network, run: 
-- `cd /nodes_modules/offchainer/test_network`
+- `cd ./nodes_modules/offchainer/test_network`
 - `./start.sh`
 
 ### Configuration
@@ -43,21 +41,45 @@ To start the test network, run:
 You can configure the project by modifying `./src/config.json`
 
 ### Execution
+
+Generate the SNARKS keys:
+
+run `nodejs offchainer generate`
+
+or use as a nodejs module: 
+```js 
+const offchainer = require('offchainer');
+const config = require('./config.json');
+offchainer.generate(config);
+```
 The owner can deploy the contracts with: 
 
 `nodejs node_modules/offchainer deploy <account> <password> <value> <secret> <arg1> <arg2> etc.`
+
+or use as a nodejs module: 
+```js 
+offchainer.deploy(config, account, password, value, secret, arg1, arg2);
+```
 
 This will generate 2 files in the folder `instances` a public file that can be shared with the users, and a key file that needs to stay private.
 
 The owner can start listening for private computations requests with: 
 
-`nodejs node_modules/offchainer listen <instance_pub> <instance_key> <account> <password>`
+`nodejs node_modules/offchainer listen <account> <password> <instance_pub> <instance_key>`
+
+or use as a nodejs module: 
+```js 
+offchainer.listen(config, account, password, instance_pub, instance_key);
+```
 
 The user can interact with the contract using:
 
-`nodejs node_modules/offchainer call <instance_pub> <account> <password> <method_name> <value> <arg1> <arg2> etc.`
+`nodejs node_modules/offchainer call <account> <password>  <instance_pub> <method_name> <value> <arg1> <arg2> etc.`
 
-
+or use as a nodejs module: 
+```js 
+offchainer.call(config, account, password, instance_pub, method_name, value, arg1, arg2);
+```
 
 
 

@@ -1,29 +1,28 @@
 const fs = require('fs');
 const path = require('path');
 const exec_command = require('../offchain/helpers/exec_command');
+const template_dir = path.resolve(__dirname+'/../templates');
 
-module.exports = async function(...args){
-    // if (!args.includes('-f') && fs.readdirSync(path.resolve('.')).length > 0){
-    //     throw "Already initiated (init -f <project_name> to overwrite)";
-    // }
-    if(args.length == 0){
+module.exports = async function(config, proj_name, ...args){
+    const config_path = './offchainer_config.json'
+    if (!args.includes('--force') && fs.existsSync(config_path)){
+        throw `Already initiated (init ${proj_name} --force to overwrite)`;
+    }
+    if(proj_name == ''){
         throw "You need to provide a name"
     }
-    const proj_name = args[args.length -1];
     const src_dir = './src';
     fs.mkdirSync(src_dir, { recursive: true });
     copyTemplate('interfaces.sol', src_dir+'/interfaces.sol');
     copyTemplate('zokrates.sol', src_dir+`/${proj_name}_onchain.sol`);
     copyTemplate('f_computation.zok', src_dir+`/${proj_name}_offchain.zok`);
-    copyTemplate('config.json', './config.json');
+    copyTemplate('offchainer_config.json', config_path);
     let proj_name_template = "__PROJECT_NAME__";
     await setTemplateValue(src_dir+`/${proj_name}_onchain.sol`, proj_name_template, proj_name);
-    await setTemplateValue('./config.json', proj_name_template, proj_name);
-
+    await setTemplateValue(config_path, proj_name_template, proj_name);
 }
 
 function copyTemplate(source, destination){
-    const template_dir = path.resolve(__dirname+'/../templates');
     copyFile(path.resolve(template_dir+'/'+source), path.resolve(destination));
 }
 

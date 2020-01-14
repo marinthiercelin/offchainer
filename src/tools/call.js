@@ -3,17 +3,8 @@ const solidity_compiler = require('../offchain/helpers/solidity_compiler');
 const RequesterUI = require('../offchain/requester/RequesterUI');
 const Web3 = require('web3');
 
-module.exports = async function(...args){
-    if(args.length < 3){
-        throw "Need to provide the instance public values, the account, the password and the call arguments"
-    }
-    const config = JSON.parse(fs.readFileSync('./config.json'));
-    const instance_pub = JSON.parse(fs.readFileSync(args[0]));
-    const account = args[1];
-    const password = args[2];
-    const method_name = args[3];
-    const call_value = args[4];
-    const call_args = args.slice(5);
+module.exports = async function(config, account, password, instance_pub_path, method_name, call_value, ...call_args){
+    const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));
     let requester_contract = await solidity_compiler.getCompiledContract(
         true,
         config.requester_name, 

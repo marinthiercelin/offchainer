@@ -16,8 +16,14 @@ async function main(){
         const call = module.exports[cmd];
         if(call){
             try{
+                const fs = require('fs');
+                const config_path = './offchainer_config.json'
+                var config = '';
+                if (fs.existsSync(config_path)) {
+                    config = JSON.parse(fs.readFileSync(config_path));
+                }
                 const args = process.argv.slice(3);
-                await call(...args);            
+                await call(config, ...args);            
             }catch(e){
                 console.error(e);
                 process.exit(1);

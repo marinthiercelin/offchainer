@@ -7,16 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const Web3 = require('web3');
 
-module.exports = async function(...args){
-    if(args.length < 2){
-        throw "Need to provide the account, password and secret"
-    }
-    const account = args[0];
-    const password = args[1];
-    const secret = parseInt(args[3]);
-    const requester_value = args[2];
-    const requester_args = args.slice(4);
-    const config = JSON.parse(fs.readFileSync('./config.json'));
+module.exports = async function(config, account, password, requester_value, secret, ...requester_args){
     var deploy_options = {
         ...config.deploy_options,
         account: account,

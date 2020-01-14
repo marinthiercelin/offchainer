@@ -4,16 +4,10 @@ const commitment_scheme = require('../offchain/commitment/HashBasedCommitment');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
 const LocalOffChainHolder = require('../offchain/holder/LocalOffChainHolder');
-module.exports = async function(...args){
-    if(args.length < 4){
-        throw "Need to provide the instance public and private values, the account and the password"
-    }
-    const config = JSON.parse(fs.readFileSync('./config.json'));
+module.exports = async function(config, account, password, instance_pub_path, instance_key_path){
     var setup_values = config.setup_values;
-    const instance_pub = JSON.parse(fs.readFileSync(args[0]));
-    const instance_key = JSON.parse(fs.readFileSync(args[1]));
-    const account = args[2];
-    const password = args[3];
+    const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));
+    const instance_key = JSON.parse(fs.readFileSync(instance_key_path));
     let zokratesSetup = new ZokratesSetup(config);
     setup_values = {...setup_values, verifier_address:instance_pub.verifier_address};
     zokratesSetup.usePastSetup(setup_values);

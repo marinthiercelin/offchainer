@@ -5,4 +5,4 @@ examples/*/build/
 UTC--*
 *.png
 test_network/
-examples/higher_lower/instances/
+examples/*/instances/
