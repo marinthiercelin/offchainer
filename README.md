@@ -3,7 +3,12 @@ Tools to have ethereum develop smart contract interacting with off-chain data an
 Aims at facilitating development of smart contract in scenarios where some data and associated computation
 needs to be off-chain, either for privacy or efficiency reasons.
 We take computations out of the smart contract, while ensuring correctness, using commitments and zk-proofs.
-See the [paper](#/docs/paper.pdf) for a formal description of the goal of this library.
+
+## Reference Paper
+
+[_Smart contract with secret parameters_](#/docs/paper.pdf)
+Marin Thiercelin, Chen-Mou Cheng, Atsuko Miyaji, Serge Vaudenay
+*SCIS 2020*
 
 ## Dependencies 
 
@@ -11,6 +16,9 @@ See the [paper](#/docs/paper.pdf) for a formal description of the goal of this l
 - [nodejs](https://github.com/nodesource/distributions/blob/master/README.md#debinstall) v12 or above
 - [solc](https://solidity.readthedocs.io/en/v0.5.13/installing-solidity.html#binary-packages) v 0.5.13 to 0.5.16 (Bug with versions 0.6.1)
 - [zokrates](https://zokrates.github.io/gettingstarted.html)
+
+Nb: Current Zokrates version doesn't work with latest solc version (0.6.1),
+you should downgrade solc to 0.5.*
 
 ### Test network dependencies:
 - [geth](https://geth.ethereum.org/docs/install-and-build/installing-geth#install-on-ubuntu-via-ppas)
