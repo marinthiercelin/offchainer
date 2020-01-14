@@ -32,7 +32,7 @@ module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {
         }
         commitment_scheme.addCommitmentToZokrates(setup_values.original_zokrates_file, setup_values.modified_zokrates_file);
         try{
-            let compile_cmd = `zokrates compile --light -s ${setup_values.zokrates_abi} -i ${setup_values.modified_zokrates_file} -o ${setup_values.compiled_file};`;
+            let compile_cmd = `zokrates compile --light --abi_spec ${setup_values.zokrates_abi} -i ${setup_values.modified_zokrates_file} -o ${setup_values.compiled_file};`;
             await exec_command(compile_cmd);
             let setup_cmd = `zokrates setup --light -i ${setup_values.compiled_file} -v ${setup_values.verification_key_file} -p ${setup_values.proving_key_file};`;
             await exec_command(setup_cmd);

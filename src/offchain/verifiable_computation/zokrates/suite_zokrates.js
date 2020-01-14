@@ -2,7 +2,7 @@ const fs = require('fs');
 const AbstractSuite = require('../AbstractSuite');
 const Web3 = require('web3');
 const exec_command = require('../../helpers/exec_command');
-
+const Path = require('path');
 
 function fromNumberTo128bitHex(number){
     let hex_str = BigInt(number).toString(16);
@@ -72,6 +72,7 @@ module.exports = class ZokratesSuite extends AbstractSuite {
         let witness_file = `${tmp_dir}/witness`;
         let witness_cmd = 
             `zokrates compute-witness --light `+
+                `--abi_spec ${this.setup_values.zokrates_abi} `+
                 `-i ${this.setup_values.compiled_file} -o ${witness_file} `+
                 `-a ${this.secret} ${public_input} `+
                 `${key[0]} ${key[1]} ${key[2]} `+
@@ -86,10 +87,25 @@ module.exports = class ZokratesSuite extends AbstractSuite {
                 `-j ${proof_file}`;
         await exec_command(proof_cmd);
         let formatted = formatZokratesOutput(proof_file);
+        deleteFolderRecursive(tmp_dir);
         return formatted;
     } 
 
 }
+
+function deleteFolderRecursive(path) {
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach((file, index) => {
+      const curPath = Path.join(path, file);
+      if (fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
+};
 
 function formatZokratesOutput(proof_file){
     let proof_json = JSON.parse(fs.readFileSync(proof_file));

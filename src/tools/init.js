@@ -8,7 +8,7 @@ module.exports = async function(config, proj_name, ...args){
     if (!args.includes('--force') && fs.existsSync(config_path)){
         throw `Already initiated (init ${proj_name} --force to overwrite)`;
     }
-    if(proj_name == ''){
+    if(!proj_name){
         throw "You need to provide a name"
     }
     const src_dir = './src';
