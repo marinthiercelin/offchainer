@@ -85,8 +85,6 @@ module.exports = class ZokratesSuite extends AbstractSuite {
                 `-p ${this.setup_values.proving_key_file} `+
                 `-j ${proof_file}`;
         await exec_command(proof_cmd);
-        let check_proof = await this.setup.verifyProof(proof_file);
-        this.config.verbose && console.log(`The proof check returned ${check_proof}`);
         let formatted = formatZokratesOutput(proof_file);
         return formatted;
     } 

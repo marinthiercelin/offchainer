@@ -31,7 +31,8 @@
         "compiled_file":"./build/compiled",
         "verification_key_file":"./build/verification.key",
         "proving_key_file":"./build/proving.key",
-        "verifier_contract":"./build/verifier.sol"
+        "verifier_contract":"./build/verifier.sol",
+        "zokrates_abi":"./build/abi.json"
     },
     "instances_dir":"./instances"
 }
