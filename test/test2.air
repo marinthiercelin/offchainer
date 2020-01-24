@@ -1,0 +1,33 @@
+define MiMC over prime field (2^256 - 351 * 2^32 + 1) {
+
+    // constant used in transition function and constraint computations
+    const alpha: 3;
+    
+    // a repeating set of value accessible in transition function and constraints
+    static roundConstant: cycle [
+        42, 43, 170, 2209, 16426, 78087, 279978, 823517, 2097194, 4782931,
+        10000042, 19487209, 35831850, 62748495, 105413546, 170859333
+    ];
+
+    // the computation requires a single input
+    secret input startValue: element[1];
+
+    // transition function definition
+    transition 1 register {
+        for each (startValue) {
+            init { yield startValue; }
+            a0 <- 100;
+            for steps [1..255] {
+                yield $r0^3 + roundConstant;
+            }
+        }
+    }
+
+    // transition constraint definition
+    enforce 1 constraint {
+        for all steps {
+            enforce transition($r) = $n;
+        }
+    }
+    
+}

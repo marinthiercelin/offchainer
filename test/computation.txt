@@ -1,0 +1,26 @@
+define add_secret over prime field (2^32 - 3 * 2^25 + 1) {
+
+    public input public_val: element[1];
+    secret input secret_val: element[1];
+
+    // define transition function
+    transition 2 registers {
+        for each (public_val, secret_val) {
+            init { 
+                a0 <- public_val;
+                a1 <- secret_val;
+                yield [a0, a1]; 
+            }
+            for steps [1..63] { 
+                a0 <- $r0+$r1;
+                a1 <- 0;
+                yield [a0, a1]; 
+            }
+        }
+    }
+
+    // define transition constraints
+    enforce 1 constraint {
+        for all steps { enforce transition($r) = $n; }
+    }
+}

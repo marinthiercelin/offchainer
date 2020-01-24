@@ -16,10 +16,9 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
      * @param {string} zokrates_file_name the path to the zokrates computation file, without the .zok extension
      * @param {string} build_directory the path to the directory where auxiliary files are generated.
      */
-    constructor(config, setup, secret, commitment_scheme, commitment_pair=undefined){
+    constructor(config, computation_file, secret, commitment_scheme, commitment_pair=undefined){
         super(config, secret, commitment_scheme, commitment_pair);
-        this.setup = setup;
-        this.setup_values = setup.getSetupValues();
+        this.computation_file = computation_file;
         this._commitmentToInt();
     }
 
@@ -28,12 +27,8 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
         this.key_ints = this._hexToBigIntArray(this.commitment_pair.key, 3).map(x => x.toString());
     }
 
-    getCommitmentPair(){
-        return this.commitment_pair;
-    }
-
     getHolderContractArgs(){
-        return [this.commitment_ints, this.setup_values.verifier_address];
+        return [this.commitment_ints, 0];
     }
 
     _hexToBigIntArray(hexstr, divide_in){

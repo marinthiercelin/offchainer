@@ -4,6 +4,7 @@
   "description": "tools to help build smart contracts interacting with private data. Using verifiable computations offchain.",
   "main": "./index.js",
   "dependencies": {
+    "@guildofweavers/genstark": "^0.7.0",
     "big-integer": "^1.6.48",
     "bigint-buffer": "^1.1.5",
     "regexp-quote": "0.0.0",
