@@ -7,21 +7,29 @@ const fs = require('fs');
  * Comm(x) = (key <- Uniform({0,1}^384), comm := SHA56(x|key))
  * ! This is only secure in the Random oracle model 
  * 
- * @param {string} value hex string of a 128bit value
+ * @param {bigint} values list of bigint values
  * @returns {Object} an object with a commitment field and a key field.
  */
-function commit(value){
-    if(value.length > 34){
-        throw "Value is too long to hash";
+function commit(values){
+    var random_number = crypto.randomBytes(16);
+    var hash_digest = Buffer.alloc(32);
+    for(i in values){
+        var value = values[i];
+        const hash = crypto.createHash('sha256');
+        value_hex= fromNumberTo128bitHex(value);
+        var buffer = Buffer.alloc(16);
+        buffer.write(value_hex, 'hex');
+        buffer = Buffer.concat([buffer, random_number, hash_digest]);
+        hash.update(buffer);
+        hash_digest = hash.digest();
     }
-    var buffer = Buffer.alloc(16);
-    buffer.write(value, 'hex');
-    var random_number = crypto.randomBytes(48);
-    buffer = Buffer.concat([buffer, random_number]);
-    const hash = crypto.createHash('sha256');
-    hash.update(buffer);
-    var digest = hash.digest('hex');
-    return {commitment:digest , key:random_number.toString('hex')};
+    return {commitment:hash_digest.toString('hex') , key:random_number.toString('hex')};
+}
+
+function fromNumberTo128bitHex(number){
+    let hex_str = BigInt(number).toString(16);
+    let hex_length = hex_str.length;
+    return "0".repeat(32-hex_length)+hex_str;
 }
 
 /**
@@ -36,29 +44,47 @@ function commit(value){
  */
 function addCommitmentToZokrates(zokrates_filepath, modified_filepath){
     let original_content = fs.readFileSync(zokrates_filepath, 'utf8');
-    let main_start_regex = / *def *main *\( *private *field *secret_input *, *field *public_input *\) *-> *\( *field *\) *: *\n/;
-    let main_start = original_content.search(main_start_regex);
-    if(main_start < 0){
+    let main_start_regex = /def\s+main\s*\(\s*private\s+field(?:\[(\d+)\])*\s+secret_inputs\s*,\s*field(?:\[(\d+)\])*\s+public_inputs\s*\)\s*->\s*\(\s*field\s*\)\s*:\s*\n/;
+    let main_match = original_content.match(main_start_regex);
+    let main_start = main_match.index;
+    if(main_start < 0 || main_match.length != 3){
         throw "Could not find the main function in the zokrates file";
     }
+
+    let nb_private_inputs = main_match[1] ? parseInt(main_match[1]) : 1;
+    let nb_public_inputs = main_match[2] ? parseInt(main_match[2]) : 1;
     main_end = original_content.length;
     let before_main = original_content.substring(0, main_start);
     let original_main = original_content.substring(main_start, main_end);
     let after_main= original_content.substring(main_end, original_content.length);
-    var include_str = 'import "hashes/sha256/512bitPacked" as sha256packed\n';
+    var include_str = 'from "hashes/sha256/512bitPadded.zok" import main as sha256\nfrom "utils/pack/unpack128.zok" import main as unpack128\nfrom "utils/pack/pack128.zok" import main as pack128\n';
 
     var commit_str = `\n
-def checkCommitment(private field secret_input, private field[3] commitment_key, field[2] commitment) -> (field):
-    field[2] h = sha256packed([secret_input, commitment_key[0], commitment_key[1], commitment_key[2]])
-    field check = if h[0]==commitment[0] && h[1]==commitment[1] then 1 else 0 fi
+def checkCommitment(private field[${nb_private_inputs}] secret_inputs, private field commitment_key, field[2] commitment) -> (field):
+    field[256] h = [0; 256]
+    for field i in 0..${nb_private_inputs} do
+        field[128] secret_input_128 = unpack128(secret_inputs[i])
+        field[128] key_128 = unpack128(commitment_key)
+        field[256] input1 = [0; 256]
+        for field j in 0..128 do
+            input1[j]= secret_input_128[j]
+            input1[128+j] = key_128[j]
+        endfor
+        h = sha256(input1, h)
+    endfor
+    field[128] h0 = h[0..128]
+    field[128] h1 = h[128..256]
+    field c0 = pack128(h0)
+    field c1 = pack128(h1)
+    field check = if c0==commitment[0] && c1==commitment[1] then 1 else 0 fi
     return check\n\n`
 
     let end_of_main_def = original_main.search('\n');
 
     let main_original_body = original_main.substring(end_of_main_def+1);
 
-    let modified_main = `def main(private field secret_input, field public_input, private field[3] commitment_key, field[2] commitment) -> (field):
-    field isCommitted = checkCommitment(secret_input, commitment_key, commitment)
+    let modified_main = `def main(private field[${nb_private_inputs}] secret_inputs, field[${nb_public_inputs}] public_inputs, private field commitment_key, field[2] commitment) -> (field):
+    field isCommitted = checkCommitment(secret_inputs, commitment_key, commitment)
     isCommitted == 1\n` + main_original_body;
     let modified_final_str = include_str + before_main + commit_str + modified_main + after_main;
     fs.writeFileSync(modified_filepath, modified_final_str);

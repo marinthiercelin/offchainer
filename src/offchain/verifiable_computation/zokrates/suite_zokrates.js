@@ -16,8 +16,8 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
      * @param {string} zokrates_file_name the path to the zokrates computation file, without the .zok extension
      * @param {string} build_directory the path to the directory where auxiliary files are generated.
      */
-    constructor(config, setup, secret, commitment_scheme, commitment_pair=undefined){
-        super(config, secret, commitment_scheme, commitment_pair);
+    constructor(config, setup, secret_inputs, commitment_scheme, commitment_pair=undefined){
+        super(config, secret_inputs, commitment_scheme, commitment_pair);
         this.setup = setup;
         this.setup_values = setup.getSetupValues();
         this._commitmentToInt();
@@ -25,7 +25,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
 
     _commitmentToInt(){
         this.commitment_ints = this._hexToBigIntArray(this.commitment_pair.commitment, 2).map(x => x.toString());
-        this.key_ints = this._hexToBigIntArray(this.commitment_pair.key, 3).map(x => x.toString());
+        this.key_ints = this._hexToBigIntArray(this.commitment_pair.key, 1).map(x => x.toString());
     }
 
     getCommitmentPair(){
@@ -51,7 +51,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
     }
 
     // make the computation and generate a proof of correctness
-    async computeAndProve(public_input){
+    async computeAndProve(public_inputs){
         let tmp_dir = fs.mkdtempSync(this.setup_values.setup_dir+"/tmp");
         let key = this.key_ints;
         let comm = this.commitment_ints;
@@ -60,8 +60,8 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
             `zokrates compute-witness --light `+
                 `--abi_spec ${this.setup_values.zokrates_abi} `+
                 `-i ${this.setup_values.compiled_file} -o ${witness_file} `+
-                `-a ${this.secret} ${public_input} `+
-                `${key[0]} ${key[1]} ${key[2]} `+
+                `-a ${this.secret_inputs.join(" ")} ${public_inputs.join(" ")} `+
+                `${key[0]} `+
                 `${comm[0]} ${comm[1]}`;
         await exec_command(witness_cmd);
         let proof_file = `${tmp_dir}/proof.json`;

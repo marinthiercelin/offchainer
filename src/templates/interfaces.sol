@@ -12,10 +12,10 @@ abstract contract SecretRequester {
         _;
     }
 
-    function callback(uint256 id, uint256 input, uint256 output) public isFromHolder(){
-        handleAnswer(id, input, output);
+    function callback(uint256 id, uint256[] memory inputs, uint256 output) public isFromHolder(){
+        handleAnswer(id, inputs, output);
     }
-    function handleAnswer(uint256 id, uint256 input, uint256 output) internal virtual;
+    function handleAnswer(uint256 id, uint256[] memory inputs, uint256 output) internal virtual;
 }
 
 abstract contract SecretHolder {
@@ -38,17 +38,17 @@ abstract contract SecretHolder {
         require(msg.sender == address(requester), "Request from unkown requester");
         _;
     }
-    function requestComputation(uint256 input)
+    function requestComputation(uint256[] memory inputs)
         public
         payable
         isFromRequester()
     returns (uint256){
         uint256 id = id_counter;
         id_counter++;
-        makeComputation(id, input);
+        makeComputation(id, inputs);
         return id;
     }
-    function makeComputation(uint256 id, uint256 input) internal virtual;
+    function makeComputation(uint256 id, uint256[] memory inputs) internal virtual;
 }
 
 abstract contract OnChainSecretHolder is SecretHolder {
@@ -56,37 +56,37 @@ abstract contract OnChainSecretHolder is SecretHolder {
     constructor(uint256 secret_value) public {
         secret = secret_value;
     }
-    function makeComputation(uint256 id, uint256 input) internal override{
-        uint output = computation(secret, input);
-        requester.callback(id, input, output);
+    function makeComputation(uint256 id, uint256[] memory inputs) internal override{
+        uint output = computation(secret, inputs);
+        requester.callback(id, inputs, output);
     }
-    function computation(uint256 secret_input, uint256 input) internal virtual returns (uint256);
+    function computation(uint256 secret_input, uint256[] memory inputs) internal virtual returns (uint256);
 }
 
 abstract contract OffChainSecretHolder is SecretHolder {
     struct request {
-        uint256 input;
+        uint256[] inputs;
         uint256 reward;
         bool active;
     }
     mapping(uint256 => request) private requests;
-    event NewRequest(uint256 id, uint256 input, uint256 reward);
-    event NewAnswer(uint256 id, uint256 input, uint256 output);
+    event NewRequest(uint256 id, uint256[] inputs, uint256 reward);
+    event NewAnswer(uint256 id, uint256[] inputs, uint256 output);
 
-    function makeComputation(uint256 id, uint256 input) internal override{
-        requests[id] = request(input, msg.value, true);
-        emit NewRequest(id, input, msg.value);
+    function makeComputation(uint256 id, uint256[] memory inputs) internal override{
+        requests[id] = request(inputs, msg.value, true);
+        emit NewRequest(id, inputs, msg.value);
     }
 
     function answerRequest(uint256 id, uint256 output, bytes memory proof) public{
         require(requests[id].active, "The answer wasn't needed");
-        bool check = verifyProof(requests[id].input, output, proof);
+        bool check = verifyProof(requests[id].inputs, output, proof);
         require(check, "The proof was incorrect");
-        emit NewAnswer(id, requests[id].input, output);
+        emit NewAnswer(id, requests[id].inputs, output);
         requests[id].active = false;
         msg.sender.transfer(requests[id].reward);
-        requester.callback(id, requests[id].input, output);
+        requester.callback(id, requests[id].inputs, output);
     }
 
-    function verifyProof(uint256 input, uint256 output, bytes memory proof) virtual internal returns (bool);
+    function verifyProof(uint256[] memory inputs, uint256 output, bytes memory proof) virtual internal returns (bool);
 }

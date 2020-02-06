@@ -9,26 +9,26 @@ contract __PROJECT_NAME__Requester is SecretRequester {
     {}
 
     event Start(uint256 id);
-    event End(uint256 id, uint256 input, uint256 result);
+    event End(uint256 id, uint256[] inputs, uint256 result);
 
-    function start(uint256 input) public returns (uint256){
+    function start(uint256[] memory inputs) public returns (uint256){
         // ==== modify here ====
-
-        uint f_input = input;
+        require(inputs.length == 1, "Expects a single input");
+        uint256[] memory f_inputs = inputs;
         // =====================
         // call for a computation of f(secret, f_input)
-        uint256 id = secret_holder.requestComputation(f_input);
+        uint256 id = secret_holder.requestComputation(f_inputs);
         emit Start(id);
     }
 
-    function handleAnswer(uint256 id, uint256 input, uint256 output) internal override {
+    function handleAnswer(uint256 id, uint256[] memory inputs, uint256 output) internal override {
         // receive the value f(secret, f_input)
         // ==== modify here ====
 
         uint256 result = output;
 
         // =====================
-        emit End(id, input, result);
+        emit End(id, inputs, result);
     }
 }
 
@@ -37,19 +37,18 @@ interface VerifierContract{
         uint[2] calldata a,
         uint[2][2] calldata b,
         uint[2] calldata c,
-        uint[4] calldata input
+        uint[] calldata inputs
     ) external returns (bool r);
 }
 
 contract __PROJECT_NAME__Holder is OffChainSecretHolder {
 
     uint256[2] public commitment;
-    address public verifier_contract;
-    string private verifyTxSignature = "verifyTx(uint256[2],uint256[2][2],uint256[2],uint256[4])";
+    VerifierContract public verifier_contract;
 
     constructor(uint256[2] memory commitment_value, address verifier_contract_address) public{
         commitment = commitment_value;
-        verifier_contract = verifier_contract_address;
+        verifier_contract = VerifierContract(verifier_contract_address);
     }
 
     struct Proof{
@@ -58,16 +57,18 @@ contract __PROJECT_NAME__Holder is OffChainSecretHolder {
         uint[2] c;
     }
 
-
     // We always return true, hence the computation is unverified
-    function verifyProof(uint input, uint output, bytes memory proof) internal override returns (bool){
+    function verifyProof(uint[] memory inputs, uint output, bytes memory proof) internal override returns (bool){
         Proof memory proof_struct = castProof(proof);
-        uint256[4] memory verifier_inputs;
-        verifier_inputs[0] = input;
-        verifier_inputs[1] = commitment[0];
-        verifier_inputs[2] = commitment[1];
-        verifier_inputs[3] = output;
-        bool check = VerifierContract(verifier_contract).verifyTx(proof_struct.a, proof_struct.b, proof_struct.c, verifier_inputs);
+        uint len = inputs.length;
+        uint256[] memory verifier_inputs = new uint256[](len+3);
+        for(uint i = 0; i < len; i++){
+            verifier_inputs[i] = inputs[i];
+        }
+        verifier_inputs[len] = commitment[0];
+        verifier_inputs[len+1] = commitment[1];
+        verifier_inputs[len+2] = output;
+        bool check = verifier_contract.verifyTx(proof_struct.a, proof_struct.b, proof_struct.c, verifier_inputs);
         return check;
     }
 

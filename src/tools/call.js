@@ -5,6 +5,15 @@ const Web3 = require('web3');
 
 module.exports = async function(config, account, password, instance_pub_path, method_name, call_value, ...call_args){
     const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));
+    for(i in call_args){
+        var arg = call_args[i]
+        var reg = /^\s*\[.*\]\s*$/
+        if(typeof arg === "string" && arg.search(reg) >= 0){
+            reg = /(0x\d+|\d+)/g;
+            arg = arg.match(reg).map(parseInt)
+            call_args[i]= arg
+        }
+    }
     let requester_contract = await solidity_compiler.getCompiledContract(
         true,
         config.requester_name, 

@@ -7,7 +7,16 @@ const fs = require('fs');
 const path = require('path');
 const Web3 = require('web3');
 
-module.exports = async function(config, account, password, requester_value, secret, ...requester_args){
+module.exports = async function(config, account, password, requester_value, secret_inputs, ...requester_args){
+    if(!Array.isArray(secret_inputs)){
+        var reg = /^\s*\[.*\]\s*$/
+        if(typeof secret_inputs === "string" && secret_inputs.search(reg) >= 0){
+            reg = /(0x\d+|\d+)/g;
+            secret_inputs = secret_inputs.match(reg).map(parseInt)
+        }else{
+            throw "You need to provide the secret_inputs as a list or a string of a list"
+        }
+    }
     var deploy_options = {
         ...config.deploy_options,
         account: account,
@@ -28,7 +37,7 @@ module.exports = async function(config, account, password, requester_value, secr
         let verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin);
         setup_values = {...setup_values, verifier_address:verifier_address};
         let zokratesSetup = new ZokratesSetup(config, setup_values);
-        let suite = new ZokratesSuite(config, zokratesSetup, secret, commitment_scheme);
+        let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme);
         let holder = await solidity_compiler.getCompiledContract(
             true,
             config.holder_name, 
@@ -53,7 +62,7 @@ module.exports = async function(config, account, password, requester_value, secr
             commitment: commitment_pair.commitment,
         };
         let instance_key = {
-            secret: secret,
+            secret_inputs: secret_inputs,
             key: commitment_pair.key,
         };
         const instances_dir = config.instances_dir;

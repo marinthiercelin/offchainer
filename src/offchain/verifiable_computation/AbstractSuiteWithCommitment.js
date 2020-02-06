@@ -12,8 +12,8 @@ function fromNumberTo128bitHex(number){
  */
 module.exports = class AbstractSuiteWithCommitment extends AbstractSuite {
     
-    constructor(config, secret, commitment_scheme, commitment_pair=undefined){
-        super(secret);
+    constructor(config, secret_inputs, commitment_scheme, commitment_pair=undefined){
+        super(secret_inputs);
         this.config = config;
         this.commitment_scheme = commitment_scheme;
         this._makeCommitment(commitment_pair);
@@ -23,7 +23,7 @@ module.exports = class AbstractSuiteWithCommitment extends AbstractSuite {
         if(typeof commitment_pair !=="undefined"){
             this.commitment_pair=commitment_pair;
         }else{
-            let hex_str = fromNumberTo128bitHex(this.secret);
+            let hex_str = fromNumberTo128bitHex(this.secret_inputs);
             this.commitment_pair=this.commitment_scheme.commit(hex_str);
         }
     }

@@ -1,6 +1,5 @@
 const web3Connector = require("../web3/web3Connector");
 const assert = require('assert');
-const ContractDeployer = require('../helpers/ContractDeployer');
 
 /**
  * This class is the off-chain part of
@@ -10,7 +9,7 @@ const ContractDeployer = require('../helpers/ContractDeployer');
  * And a code (this) running locally, waiting for requests modifications, performing computations
  * and returning the results (along with proofs, if needed).
  */
-module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedClass {
+module.exports = class HolderListener extends web3Connector.web3ConnectedClass {
 
     /**
      * 
@@ -34,7 +33,7 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
      * @param {string} address the address of the contract
      */
     async connect(holder_contract_abi, address){
-        assert(!this.connected, "the holder was already connected to a contract");
+        assert(!this.connected, "the listener was already connected to a contract");
         this._connectWeb3Ws();
         this.contract = new this.web3.eth.Contract(holder_contract_abi, address);
         this.connected = true;
@@ -47,8 +46,8 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
      * also optionally the gas, gasPrice and value used for the transaction.
      */
     async start(answer_options){
-        assert(this.connected, "the holder wasn't connected to a contract");
-        assert(!this.started, "the holder was already started");
+        assert(this.connected, "the listener wasn't connected to a contract");
+        assert(!this.started, "the listener was already started");
         this.subscription = this.contract.events.NewRequest()
         .on("data", this._answerRequest(answer_options))
         .on("error", console.error);
@@ -60,7 +59,7 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
      * Returns the address of the holder contract
      */
     getContractAddress(){
-        assert(this.connected, "The holder wasn't connected to a contract");
+        assert(this.connected, "The listener wasn't connected to a contract");
         return this.contract.options.address;
     }
 
@@ -72,25 +71,26 @@ module.exports = class LocalOffChainHolder extends web3Connector.web3ConnectedCl
      */
     _answerRequest(answer_options){
         return (data) => {
-            this.config.verbose && console.log("Received a Request");
+            this.config.verbose && console.log("Listener received a Request");
+            console.log(data);
             if( data.event=="NewRequest" && 
                 data.returnValues && 
                 data.returnValues.id && 
-                data.returnValues.input &&
+                data.returnValues.inputs &&
                 data.returnValues.reward)
             {
                 
                 let id = parseInt(data.returnValues.id);
-                let input = parseInt(data.returnValues.input);
+                let inputs = data.returnValues.inputs.map(BigInt);
                 let reward = parseInt(data.returnValues.reward);
-                this.config.verbose && console.log(`id: ${id} input: ${input} reward: ${reward}`);
+                this.config.verbose && console.log(`id: ${id} inputs: ${inputs} reward: ${reward}`);
                 this.web3.eth.personal.unlockAccount(answer_options.account, answer_options.password, answer_options.unlockDuration)
                 .then( () => 
-                    this.verifiable_computation_suite.computeAndProve(input)
+                    this.verifiable_computation_suite.computeAndProve(inputs)
                 )
                 .then( verifiable_output  => {
                     if(this.config.verbose){
-                        console.log(`Answering a request id: ${id} input: ${input} output: ${verifiable_output.output}`);
+                        console.log(`Listner answers a request id: ${id} inputs: ${inputs} output: ${verifiable_output.output}`);
                     }
                     let answerTx = this.contract.methods.answerRequest(
                         id, 
