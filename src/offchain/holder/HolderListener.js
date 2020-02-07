@@ -72,7 +72,6 @@ module.exports = class HolderListener extends web3Connector.web3ConnectedClass {
     _answerRequest(answer_options){
         return (data) => {
             this.config.verbose && console.log("Listener received a Request");
-            console.log(data);
             if( data.event=="NewRequest" && 
                 data.returnValues && 
                 data.returnValues.id && 
@@ -90,7 +89,7 @@ module.exports = class HolderListener extends web3Connector.web3ConnectedClass {
                 )
                 .then( verifiable_output  => {
                     if(this.config.verbose){
-                        console.log(`Listner answers a request id: ${id} inputs: ${inputs} output: ${verifiable_output.output}`);
+                        console.log(`Listener answers a request id: ${id} inputs: ${inputs} output: ${BigInt(verifiable_output.output).toString()}`);
                     }
                     let answerTx = this.contract.methods.answerRequest(
                         id, 

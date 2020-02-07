@@ -11,7 +11,8 @@ module.exports = async function(config, account, password, instance_pub_path, in
     setup_values = {...setup_values, verifier_address:instance_pub.verifier_address};
     let zokratesSetup = new ZokratesSetup(config, setup_values);
     let commitment_pair = {commitment: instance_pub.commitment, key: instance_key.key};
-    let suite = new ZokratesSuite(config, zokratesSetup, instance_key.secret_inputs, commitment_scheme, commitment_pair=commitment_pair);
+    let secret_inputs = instance_key.secret_inputs.map(BigInt);
+    let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme, commitment_pair=commitment_pair);
     let holder = new HolderListener(config, suite);
     let holder_contract = await solidity_compiler.getCompiledContract(
         true,

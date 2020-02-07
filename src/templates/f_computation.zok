@@ -1,3 +1,10 @@
-def main(private field[1] secret_inputs, field[1] public_inputs) -> (field):
+def main(private field[__NB_PRIV_INPUTS__] secret_inputs, field[__NB_PUB_INPUTS__] public_inputs) -> (field):
     // modify here
-    return secret_inputs[0] + public_inputs[0]
+    field result = 0
+    for field i in 0..__NB_PRIV_INPUTS__ do
+        result = result + secret_inputs[i] 
+    endfor
+    for field j in 0..__NB_PUB_INPUTS__ do
+        result = result + public_inputs[j] 
+    endfor
+    return result 

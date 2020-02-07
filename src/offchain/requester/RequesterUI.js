@@ -68,6 +68,8 @@ module.exports = class RequesterUI extends web3Connector.web3ConnectedClass {
         return this._makeOutputPromise(method_info, send_options, tx);
     }
 
+    
+
     _makeOutputPromise(method_info, send_options, transaction){
         return this.web3.eth.personal.unlockAccount(send_options.account, send_options.password, send_options.unlockDuration)
         .then(()=>{

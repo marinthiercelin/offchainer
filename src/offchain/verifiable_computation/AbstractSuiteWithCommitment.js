@@ -23,8 +23,7 @@ module.exports = class AbstractSuiteWithCommitment extends AbstractSuite {
         if(typeof commitment_pair !=="undefined"){
             this.commitment_pair=commitment_pair;
         }else{
-            let hex_str = fromNumberTo128bitHex(this.secret_inputs);
-            this.commitment_pair=this.commitment_scheme.commit(hex_str);
+            this.commitment_pair=this.commitment_scheme.commit(this.secret_inputs);
         }
     }
 

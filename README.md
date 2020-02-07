@@ -62,7 +62,7 @@ offchainer.generate(config);
 ```
 The owner can deploy the contracts with: 
 
-`nodejs node_modules/offchainer deploy <account> <password> <value> <secret> <arg1> <arg2> etc.`
+`nodejs node_modules/offchainer deploy <account> <password> <value> <secret_inputs> <arg1> <arg2> etc.`
 
 or use as a nodejs module: 
 ```js 

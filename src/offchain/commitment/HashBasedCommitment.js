@@ -23,7 +23,7 @@ function commit(values){
         hash.update(buffer);
         hash_digest = hash.digest();
     }
-    return {commitment:hash_digest.toString('hex') , key:random_number.toString('hex')};
+    return {commitment:'0x'+hash_digest.toString('hex') , key:'0x'+random_number.toString('hex')};
 }
 
 function fromNumberTo128bitHex(number){

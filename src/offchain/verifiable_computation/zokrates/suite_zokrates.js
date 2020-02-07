@@ -37,7 +37,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
     }
 
     _hexToBigIntArray(hexstr, divide_in){
-        if(hexstr[0]==='0' && hexstr==='x'){
+        if(hexstr[0]==='0' && hexstr[1]==='x'){
             hexstr = hexstr.substring(2);
         }
         if(hexstr.length % divide_in !== 0){
@@ -97,11 +97,5 @@ function formatZokratesOutput(proof_file){
     let proof_json = JSON.parse(fs.readFileSync(proof_file));
     let input_len = proof_json.inputs.length;
     let output_hex = proof_json.inputs[input_len-1];
-    let output = BigInt(output_hex).toString();
-    let a = proof_json.proof.a;
-    let b = proof_json.proof.b;
-    let c = proof_json.proof.c;
-    let toOneHex = (list) => list.flat().map(x => x.substring(2)).reduce((a,b)=>a+b); 
-    let proof_hex = "0x" + toOneHex(a) + toOneHex(b) + toOneHex(c);
-    return {output:output, proof: Web3.utils.hexToBytes(proof_hex)};
+    return {output:output_hex, proof: proof_json.proof};
 }

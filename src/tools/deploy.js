@@ -8,15 +8,10 @@ const path = require('path');
 const Web3 = require('web3');
 
 module.exports = async function(config, account, password, requester_value, secret_inputs, ...requester_args){
-    if(!Array.isArray(secret_inputs)){
-        var reg = /^\s*\[.*\]\s*$/
-        if(typeof secret_inputs === "string" && secret_inputs.search(reg) >= 0){
-            reg = /(0x\d+|\d+)/g;
-            secret_inputs = secret_inputs.match(reg).map(parseInt)
-        }else{
-            throw "You need to provide the secret_inputs as a list or a string of a list"
-        }
+    if(secret_inputs.length !== config.nb_priv_inputs){
+        throw `The secret inputs should be a list of size ${config.nb_priv_inputs}`
     }
+    secret_inputs = secret_inputs.map(BigInt);
     var deploy_options = {
         ...config.deploy_options,
         account: account,
@@ -62,7 +57,7 @@ module.exports = async function(config, account, password, requester_value, secr
             commitment: commitment_pair.commitment,
         };
         let instance_key = {
-            secret_inputs: secret_inputs,
+            secret_inputs: secret_inputs.map(x => '0x'+x.toString(16)),
             key: commitment_pair.key,
         };
         const instances_dir = config.instances_dir;
@@ -73,6 +68,7 @@ module.exports = async function(config, account, password, requester_value, secr
         while(fs.existsSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_pub.json`))){
             count++;
         }
+        config.verbose && console.log(`Instance Number: ${count}`);
         fs.writeFileSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_pub.json`), JSON.stringify(instance_pub));
         fs.writeFileSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_key.json`), JSON.stringify(instance_key));
     }catch(e){
