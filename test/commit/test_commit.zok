@@ -1,0 +1,40 @@
+from "hashes/sha256/512bitPadded.zok" import main as sha256
+from "utils/pack/unpack128.zok" import main as unpack128
+from "utils/pack/pack128.zok" import main as pack128
+
+def hashInput(private field secret_input) -> (field[256]):
+    field[128] input_128 = unpack128(secret_input)
+    field[256] input_256 = [0; 256]
+    for field j in 0..128 do
+        input_256[128+j]= input_128[j]
+    endfor
+    field[256] zero_256 = [0; 256]
+    field[256] h = sha256(zero_256, input_256)
+    return h
+
+def main(private field[4] secret_inputs, private field[2] key) -> (field[2]):
+    field[4][256] base_hashs = [[0;256];4]
+    for field i in 0..4 do
+        field[256] h = hashInput(secret_inputs[i])
+        base_hashs[i] = h
+    endfor
+    field[2][256] level1_hashs = [[0;256];2]
+    for field i in 0..2 do
+        field[256] h = sha256(base_hashs[2*i], base_hashs[2*i+1])
+        level1_hashs[i] = h
+    endfor
+    field[256] merkle_root = sha256(level1_hashs[0], level1_hashs[1])
+    field[128] k0 = unpack128(key[0])
+    field[128] k1 = unpack128(key[1])
+    field[256] k = [0;256]
+    for field j in 0..128 do
+        k[j] = k0[j]
+        k[128+j]= k1[j]
+    endfor
+    field[256] comm = sha256(merkle_root, k)
+    field[128] h0 = comm[0..128]
+    field[128] h1 = comm[128..256]
+    field c0 = pack128(h0)
+    field c1 = pack128(h1)
+    field[2] commitment = [c0, c1]
+    return commitment
