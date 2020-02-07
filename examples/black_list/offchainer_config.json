@@ -1,0 +1,38 @@
+{
+    "node_http_rpc":"http://127.0.0.1:8545",
+    "node_ws_rpc":"ws://127.0.0.1:8546",
+    "verbose":true,
+    "deploy_options":{
+        "unlockDuration": 0,
+        "gas": 4712388,
+        "gasPrice": 100000000000,
+        "value": 0
+    },
+    "listen_options":{
+        "unlockDuration": 0,
+        "gas": 4712388,
+        "gasPrice": 100000000000,
+        "value": 0
+    },
+    "call_options":{
+        "unlockDuration": 0,
+        "gas": 4712388,
+        "gasPrice": 100000000000,
+        "value": 0
+    },
+    "proj_name":"black_list",
+    "holder_name":"black_listHolder",
+    "requester_name":"black_listRequester",
+    "onchain_file":"./src/black_list_onchain.sol",
+    "setup_values":{
+        "setup_dir":"./build",
+        "original_zokrates_file":"./src/black_list_offchain.zok",
+        "modified_zokrates_file":"./build/modified.zok",
+        "compiled_file":"./build/compiled",
+        "verification_key_file":"./build/verification.key",
+        "proving_key_file":"./build/proving.key",
+        "verifier_contract":"./build/verifier.sol",
+        "zokrates_abi":"./build/abi.json"
+    },
+    "instances_dir":"./instances"
+}
