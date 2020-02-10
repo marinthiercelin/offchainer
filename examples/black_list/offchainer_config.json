@@ -37,5 +37,5 @@
     "instances_dir":"./instances",
     "nb_pub_inputs": 1,
     "nb_priv_inputs": 10,
-    "commitment_scheme": "chain"
+    "commitment_scheme": "simple"
 }

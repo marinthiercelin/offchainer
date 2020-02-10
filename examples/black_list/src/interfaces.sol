@@ -89,16 +89,16 @@ interface VerifierContract{
         uint[2] calldata a,
         uint[2][2] calldata b,
         uint[2] calldata c,
-        uint[1+3] calldata inputs
+        uint[1+20+1] calldata inputs
     ) external returns (bool r);
 }
 
 contract ZokratesHolder is OffChainSecretHolder {
 
-    uint128[2] public commitment;
+    uint128[20] public commitment;
     VerifierContract public verifier_contract;
 
-    constructor(uint128[2] memory commitment_value, address verifier_contract_address) public{
+    constructor(uint128[20] memory commitment_value, address verifier_contract_address) public{
         commitment = commitment_value;
         verifier_contract = VerifierContract(verifier_contract_address);
     }
@@ -116,13 +116,14 @@ contract ZokratesHolder is OffChainSecretHolder {
 
     // We always return true, hence the computation is unverified
     function verifyProof(uint128[1] memory f_inputs, uint128 output, Proof memory proof) internal returns (bool){
-        uint256[1+3] memory verifier_inputs;
+        uint256[1+20+1] memory verifier_inputs;
         for(uint i = 0; i < 1; i++){
             verifier_inputs[i] = f_inputs[i];
         }
-        verifier_inputs[1] = commitment[0];
-        verifier_inputs[1+1] = commitment[1];
-        verifier_inputs[1+2] = output;
+        for(uint i = 0; i < 20; i++){
+            verifier_inputs[1+i] = commitment[i];
+        }
+        verifier_inputs[1+20] = output;
         bool check = verifier_contract.verifyTx(proof.a, proof.b, proof.c, verifier_inputs);
         return check;
     }
