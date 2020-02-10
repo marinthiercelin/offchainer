@@ -1,6 +1,5 @@
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
-const MerkleTreeCommitment = require('../offchain/commitment/MerkleTreeCommitment');
-const HashChainCommitment = require('../offchain/commitment/HashChainCommitment');
+const {supported_commitments} = require('./init');
 const ContractDeployer = require('../offchain/helpers/ContractDeployer');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
@@ -8,17 +7,15 @@ const fs = require('fs');
 const path = require('path');
 const Web3 = require('web3');
 
-module.exports = async function(config, account, password, requester_value, secret_inputs, ...requester_args){
+module.exports.functionality  = async function(config, account, password, requester_value, secret_inputs, ...requester_args){
     if(secret_inputs.length !== config.nb_priv_inputs){
         throw `The secret inputs should be a list of size ${config.nb_priv_inputs}`
     }
     let commitment_scheme;
-    if(config.commitment_scheme === 'merkle'){
-        commitment_scheme = new MerkleTreeCommitment();
-    }else if(config.commitment_scheme === 'chain'){
-        commitment_scheme = new HashChainCommitment();
+    if(!(config.commitment_scheme in supported_commitments)){
+        throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be ${Object.keys(supported_commitments).join("|")}`;
     }else{
-        throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be merkle or chain`;
+        commitment_scheme = new supported_commitments[config.commitment_scheme]();
     }
     secret_inputs = secret_inputs.map(BigInt);
     var deploy_options = {

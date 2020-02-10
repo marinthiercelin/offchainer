@@ -1,19 +1,16 @@
 const fs = require('fs');
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
-const MerkleTreeCommitment = require('../offchain/commitment/MerkleTreeCommitment');
-const HashChainCommitment = require('../offchain/commitment/HashChainCommitment');
+const {supported_commitments} = require('./init');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
 const HolderListener = require('../offchain/holder/HolderListener');
 
-module.exports = async function(config, account, password, instance_pub_path, instance_key_path){
+module.exports.functionality  = async function(config, account, password, instance_pub_path, instance_key_path){
     let commitment_scheme;
-    if(config.commitment_scheme === 'merkle'){
-        commitment_scheme = new MerkleTreeCommitment();
-    }else if(config.commitment_scheme === 'chain'){
-        commitment_scheme = new HashChainCommitment();
+    if(!(config.commitment_scheme in supported_commitments)){
+        throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be ${Object.keys(supported_commitments).join("|")}`;
     }else{
-        throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be merkle or chain`;
+        commitment_scheme = new supported_commitments[config.commitment_scheme]();
     }
     var setup_values = config.setup_values;
     const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));

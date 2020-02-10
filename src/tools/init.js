@@ -2,8 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const exec_command = require('../offchain/helpers/exec_command');
 const template_dir = path.resolve(__dirname+'/../templates');
+const MerkleTreeCommitment = require('../offchain/commitment/MerkleTreeCommitment');
+const HashChainCommitment = require('../offchain/commitment/HashChainCommitment');
+const SimpleHashCommitment = require('../offchain/commitment/SimpleHashCommitment');
 
-module.exports = async function(config, proj_name, commitment_scheme='merkle', nb_priv_inputs='1', nb_pub_inputs='1', ...args){
+const supported_commitments = {merkle:MerkleTreeCommitment, chain: HashChainCommitment, simple: SimpleHashCommitment};
+
+module.exports.supported_commitments = supported_commitments;
+
+module.exports.functionality = async function(config, proj_name, commitment_scheme='simple', nb_priv_inputs='1', nb_pub_inputs='1', ...args){
     const config_path = './offchainer_config.json'
     if (!args.includes('--force') && fs.existsSync(config_path)){
         throw `Already initiated (init ${proj_name} --force to overwrite)`;
@@ -11,8 +18,8 @@ module.exports = async function(config, proj_name, commitment_scheme='merkle', n
     if(!proj_name){
         throw "You need to provide a name"
     }
-    if(commitment_scheme !== 'merkle' || commitment_scheme !== 'chain'){
-        throw `Commitment scheme needs to be merkle or chain, received ${commitment_scheme}`;
+    if(!(commitment_scheme in supported_commitments)){
+        throw `Commitment scheme needs to be [${Object.keys(supported_commitments).join("|")}], received ${commitment_scheme}`;
     }
     const src_dir = './src';
     fs.mkdirSync(src_dir, { recursive: true });
@@ -37,7 +44,11 @@ module.exports = async function(config, proj_name, commitment_scheme='merkle', n
     await setTemplateValue(config_path, nb_priv_template, nb_priv_inputs);
     
     let commitment_scheme_template = "__COMMITMENT_SCHEME__";
-    await setTemplateValue(config_path, commitment_scheme_template, commtiment_scheme);
+    await setTemplateValue(config_path, commitment_scheme_template, commitment_scheme);
+
+    let commitment_size_template = "__COMMITMENT_SIZE__";
+    await setTemplateValue(src_dir+'/interfaces.sol', commitment_size_template, supported_commitments[commitment_scheme].getCommitmentBitSize(nb_priv_inputs)/128);
+
 }
 
 function copyTemplate(source, destination){

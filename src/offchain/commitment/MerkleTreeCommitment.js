@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const fs = require('fs');
 const HashChainCommitment = require('./HashChainCommitment');
 
 function sha256(hex_string){
@@ -180,10 +179,8 @@ def merkleTree(private field[${length}] base_values) -> (field[256]):
         return result;
     }
 
-    getZokratesArgs(commitment_pair){
-        let commitment_ints = this.hexToBigIntArray(commitment_pair.commitment, 2);
-        let key_ints = this.hexToBigIntArray(commitment_pair.key, 2);
-        return key_ints.map(x => x.toString()).join(" ") + " " + commitment_ints.map(x => x.toString()).join(" ");
+    static getCommitmentBitSize(nb_private_inputs){
+        return 256;
     }
 }
 

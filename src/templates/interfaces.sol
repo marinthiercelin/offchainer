@@ -89,16 +89,16 @@ interface VerifierContract{
         uint[2] calldata a,
         uint[2][2] calldata b,
         uint[2] calldata c,
-        uint[__NB_PUB_INPUTS__+3] calldata inputs
+        uint[__NB_PUB_INPUTS__+__COMMITMENT_SIZE__+1] calldata inputs
     ) external returns (bool r);
 }
 
 contract ZokratesHolder is OffChainSecretHolder {
 
-    uint128[2] public commitment;
+    uint128[__COMMITMENT_SIZE__] public commitment;
     VerifierContract public verifier_contract;
 
-    constructor(uint128[2] memory commitment_value, address verifier_contract_address) public{
+    constructor(uint128[__COMMITMENT_SIZE__] memory commitment_value, address verifier_contract_address) public{
         commitment = commitment_value;
         verifier_contract = VerifierContract(verifier_contract_address);
     }
@@ -116,13 +116,14 @@ contract ZokratesHolder is OffChainSecretHolder {
 
     // We always return true, hence the computation is unverified
     function verifyProof(uint128[__NB_PUB_INPUTS__] memory f_inputs, uint128 output, Proof memory proof) internal returns (bool){
-        uint256[__NB_PUB_INPUTS__+3] memory verifier_inputs;
+        uint256[__NB_PUB_INPUTS__+__COMMITMENT_SIZE__+1] memory verifier_inputs;
         for(uint i = 0; i < __NB_PUB_INPUTS__; i++){
             verifier_inputs[i] = f_inputs[i];
         }
-        verifier_inputs[__NB_PUB_INPUTS__] = commitment[0];
-        verifier_inputs[__NB_PUB_INPUTS__+1] = commitment[1];
-        verifier_inputs[__NB_PUB_INPUTS__+2] = output;
+        for(uint i = 0; i < __COMMITMENT_SIZE__; i++){
+            verifier_inputs[__NB_PUB_INPUTS__+i] = commitment[i];
+        }
+        verifier_inputs[__NB_PUB_INPUTS__+__COMMITMENT_SIZE__] = output;
         bool check = verifier_contract.verifyTx(proof.a, proof.b, proof.c, verifier_inputs);
         return check;
     }

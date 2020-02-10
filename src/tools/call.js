@@ -3,7 +3,7 @@ const solidity_compiler = require('../offchain/helpers/solidity_compiler');
 const RequesterUI = require('../offchain/requester/RequesterUI');
 const Web3 = require('web3');
 
-module.exports = async function(config, account, password, instance_pub_path, method_name, call_value, ...call_args){
+module.exports.functionality  = async function(config, account, password, instance_pub_path, method_name, call_value, ...call_args){
     
     const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));
     

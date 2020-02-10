@@ -1,11 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 
-function fromNumberTo128bitHex(number){
-    let hex_str = BigInt(number).toString(16);
-    let hex_length = hex_str.length;
-    return "0".repeat(32-hex_length)+hex_str;
-}
+
 
 module.exports = class HashChainCommitment {
 
@@ -25,7 +21,7 @@ module.exports = class HashChainCommitment {
         for(var i in values){
             var value = values[i];
             const hash = crypto.createHash('sha256');
-            var value_hex = fromNumberTo128bitHex(value);
+            var value_hex = this.fromNumberTo128bitHex(value);
             var buffer = Buffer.alloc(16);
             buffer.write(value_hex, 'hex');
             buffer = Buffer.concat([buffer, random_number, hash_digest]);
@@ -33,6 +29,12 @@ module.exports = class HashChainCommitment {
             hash_digest = hash.digest();
         }
         return {commitment:'0x'+hash_digest.toString('hex') , key:'0x'+random_number.toString('hex')};
+    }
+
+    fromNumberTo128bitHex(number){
+        let hex_str = BigInt(number).toString(16);
+        let hex_length = hex_str.length;
+        return "0".repeat(32-hex_length)+hex_str;
     }
 
     getMainRegexp(){
@@ -109,28 +111,33 @@ def checkCommitment(private field[${nb_private_inputs}] secret_inputs, private f
         return 'from "hashes/sha256/512bitPadded.zok" import main as sha256\nfrom "utils/pack/unpack128.zok" import main as unpack128\nfrom "utils/pack/pack128.zok" import main as pack128\n';
     }
 
-    hexToBigIntArray(hexstr, divide_in){
+    hexTo128bitDecimals(hexstr){
         if(hexstr[0]==='0' && hexstr[1]==='x'){
             hexstr = hexstr.substring(2);
         }
-        if(hexstr.length % divide_in !== 0){
-            throw "Cannot divide the hex_str equally";
+        if(hexstr.length < 32 || hexstr.length % 32 !== 0){
+            throw "Cannot divide the hex_str equally in 128bits";
         }
-        let bigIntLen = hexstr.length/divide_in;
+        let divide_in = hexstr.length/32
+        let bigIntLen = 32;
         let indexes = [...Array(divide_in).keys()];
         let substrings = indexes.map(i => '0x'+hexstr.substring(i*bigIntLen, (i+1)*bigIntLen));
-        let result = substrings.map(str => BigInt(str));
+        let result = substrings.map(str => BigInt(str).toString());
         return result;
     }
 
     getZokratesArgs(commitment_pair){
-        let commitment_ints = this.hexToBigIntArray(commitment_pair.commitment, 2);
-        let key_ints = this.hexToBigIntArray(commitment_pair.key, 1);
-        return key_ints.map(x => x.toString()).join(" ") + " " + commitment_ints.map(x => x.toString()).join(" ");
+        let commitment_ints = this.hexTo128bitDecimals(commitment_pair.commitment);
+        let key_ints = this.hexTo128bitDecimals(commitment_pair.key);
+        return key_ints.join(" ") + " " + commitment_ints.join(" ");
     }
 
     getHolderArgs(commitment_pair){
-        let commitment_ints = this.hexToBigIntArray(commitment_pair.commitment, 2);
-        return [commitment_ints.map(x => x.toString())]
+        let commitment_ints = this.hexTo128bitDecimals(commitment_pair.commitment);
+        return [commitment_ints];
+    }
+
+    static getCommitmentBitSize(nb_private_inputs){
+        return 256;
     }
 }

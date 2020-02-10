@@ -1,17 +1,14 @@
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
-const MerkleTreeCommitment = require('../offchain/commitment/MerkleTreeCommitment');
-const HashChainCommitment = require('../offchain/commitment/HashChainCommitment');
+const {supported_commitments} = require('./init');
 
-module.exports = async function(config){
+module.exports.functionality  = async function(config){
     const setup_values = config.setup_values;
     const setup = new ZokratesSetup(config, setup_values);
     let commitment_scheme;
-    if(config.commitment_scheme === 'merkle'){
-        commitment_scheme = new MerkleTreeCommitment();
-    }else if(config.commitment_scheme === 'chain'){
-        commitment_scheme = new HashChainCommitment();
+    if(!(config.commitment_scheme in supported_commitments)){
+        throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be ${Object.keys(supported_commitments).join("|")}`;
     }else{
-        throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be merkle or chain`;
+        commitment_scheme = new supported_commitments[config.commitment_scheme]();
     }
     await setup.generate(commitment_scheme);
 }
