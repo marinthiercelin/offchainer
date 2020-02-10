@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const fs = require('fs');
-const HashBasedCommitment = require('./HashBasedCommitment');
+const HashChainCommitment = require('./HashChainCommitment');
 
 function sha256(hex_string){
     // console.log(hex_string, hex_string.length)
@@ -93,7 +93,7 @@ function extendedLen(len) {
     return Math.pow(2, Math.ceil(Math.log2(len)));
 }
 
-module.exports = class MerkleTreeCommitment extends HashBasedCommitment {
+module.exports = class MerkleTreeCommitment extends HashChainCommitment {
 
     commit(values){
         let extended = extend(values);

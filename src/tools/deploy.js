@@ -1,5 +1,6 @@
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
-const commitment_scheme = require('../offchain/commitment/MerkleTreeCommitment');
+const MerkleTreeCommitment = require('../offchain/commitment/MerkleTreeCommitment');
+const HashChainCommitment = require('../offchain/commitment/HashChainCommitment');
 const ContractDeployer = require('../offchain/helpers/ContractDeployer');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
@@ -11,6 +12,14 @@ module.exports = async function(config, account, password, requester_value, secr
     if(secret_inputs.length !== config.nb_priv_inputs){
         throw `The secret inputs should be a list of size ${config.nb_priv_inputs}`
     }
+    let commitment_scheme;
+    if(config.commitment_scheme === 'merkle'){
+        commitment_scheme = new MerkleTreeCommitment();
+    }else if(config.commitment_scheme === 'chain'){
+        commitment_scheme = new HashChainCommitment();
+    }else{
+        throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be merkle or chain`;
+    }
     secret_inputs = secret_inputs.map(BigInt);
     var deploy_options = {
         ...config.deploy_options,
@@ -19,35 +28,40 @@ module.exports = async function(config, account, password, requester_value, secr
     };
     var setup_values = config.setup_values;
     try{
-        var contractDeployer = new ContractDeployer(config);
         if (!fs.existsSync(setup_values.setup_dir)){
             fs.mkdirSync(setup_values.setup_dir, {recursive:true});
         }
+        
         let verifier = await solidity_compiler.getCompiledContract(
             true,
             'Verifier', 
             setup_values.verifier_contract, 
             setup_values.setup_dir
         );
-        let verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin);
-        setup_values = {...setup_values, verifier_address:verifier_address};
-        let zokratesSetup = new ZokratesSetup(config, setup_values);
-        let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, new commitment_scheme());
         let holder = await solidity_compiler.getCompiledContract(
             true,
             config.holder_name, 
             config.onchain_file, 
             setup_values.setup_dir
         );
-        let holder_address = await contractDeployer.deploy(deploy_options, holder.abi, holder.bin, suite.getHolderContractArgs());
         let requester = await solidity_compiler.getCompiledContract(
             false,
             config.requester_name, 
             config.onchain_file,  
             setup_values.setup_dir
         );
+
+        var contractDeployer = new ContractDeployer(config);
+        let verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin);
+
+        setup_values = {...setup_values, verifier_address:verifier_address};
+        let zokratesSetup = new ZokratesSetup(config, setup_values);
+        let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme);
+        let holder_address = await contractDeployer.deploy(deploy_options, holder.abi, holder.bin, suite.getHolderContractArgs());
+        
         deploy_options.value = Web3.utils.toWei( requester_value, 'ether');
         let requester_address = await contractDeployer.deploy(deploy_options, requester.abi, requester.bin, [holder_address, ...requester_args]);
+        
         let commitment_pair = suite.getCommitmentPair();
         let instance_pub = {
             owner_account: account,

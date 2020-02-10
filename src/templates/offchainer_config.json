@@ -36,5 +36,6 @@
     },
     "instances_dir":"./instances",
     "nb_pub_inputs": __NB_PUB_INPUTS__,
-    "nb_priv_inputs": __NB_PRIV_INPUTS__
+    "nb_priv_inputs": __NB_PRIV_INPUTS__,
+    "commitment_scheme": __COMMITMENT_SCHEME__
 }

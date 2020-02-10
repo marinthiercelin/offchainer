@@ -1,7 +1,13 @@
 const crypto = require('crypto');
 const fs = require('fs');
 
-module.exports = class HashBasedCommitment {
+function fromNumberTo128bitHex(number){
+    let hex_str = BigInt(number).toString(16);
+    let hex_length = hex_str.length;
+    return "0".repeat(32-hex_length)+hex_str;
+}
+
+module.exports = class HashChainCommitment {
 
     /**
      * Defines a commitment scheme
@@ -16,10 +22,10 @@ module.exports = class HashBasedCommitment {
     commit(values){
         var random_number = crypto.randomBytes(16);
         var hash_digest = Buffer.alloc(32);
-        for(i in values){
+        for(var i in values){
             var value = values[i];
             const hash = crypto.createHash('sha256');
-            value_hex= fromNumberTo128bitHex(value);
+            var value_hex = fromNumberTo128bitHex(value);
             var buffer = Buffer.alloc(16);
             buffer.write(value_hex, 'hex');
             buffer = Buffer.concat([buffer, random_number, hash_digest]);
@@ -27,12 +33,6 @@ module.exports = class HashBasedCommitment {
             hash_digest = hash.digest();
         }
         return {commitment:'0x'+hash_digest.toString('hex') , key:'0x'+random_number.toString('hex')};
-    }
-
-    fromNumberTo128bitHex(number){
-        let hex_str = BigInt(number).toString(16);
-        let hex_length = hex_str.length;
-        return "0".repeat(32-hex_length)+hex_str;
     }
 
     getMainRegexp(){
@@ -77,31 +77,32 @@ module.exports = class HashBasedCommitment {
     }
 
     getModifiedMainSignature(nb_private_inputs, nb_public_inputs) {
-        return `def main(private field[${nb_private_inputs}] secret_inputs, field[${nb_public_inputs}] public_inputs, private field commitment_key, field[2] commitment) -> (field):
-        field isCommitted = checkCommitment(secret_inputs, commitment_key, commitment)
-        isCommitted == 1\n`;
+        return `\n
+def main(private field[${nb_private_inputs}] secret_inputs, field[${nb_public_inputs}] public_inputs, private field commitment_key, field[2] commitment) -> (field):
+    field isCommitted = checkCommitment(secret_inputs, commitment_key, commitment)
+    isCommitted == 1\n`;
     }
 
     getCheckCommitString(nb_private_inputs) {
         return `\n
-    def checkCommitment(private field[${nb_private_inputs}] secret_inputs, private field commitment_key, field[2] commitment) -> (field):
-        field[256] h = [0; 256]
-        for field i in 0..${nb_private_inputs} do
-            field[128] secret_input_128 = unpack128(secret_inputs[i])
-            field[128] key_128 = unpack128(commitment_key)
-            field[256] input1 = [0; 256]
-            for field j in 0..128 do
-                input1[j]= secret_input_128[j]
-                input1[128+j] = key_128[j]
-            endfor
-            h = sha256(input1, h)
+def checkCommitment(private field[${nb_private_inputs}] secret_inputs, private field commitment_key, field[2] commitment) -> (field):
+    field[256] h = [0; 256]
+    for field i in 0..${nb_private_inputs} do
+        field[128] secret_input_128 = unpack128(secret_inputs[i])
+        field[128] key_128 = unpack128(commitment_key)
+        field[256] input1 = [0; 256]
+        for field j in 0..128 do
+            input1[j]= secret_input_128[j]
+            input1[128+j] = key_128[j]
         endfor
-        field[128] h0 = h[0..128]
-        field[128] h1 = h[128..256]
-        field c0 = pack128(h0)
-        field c1 = pack128(h1)
-        field check = if c0==commitment[0] && c1==commitment[1] then 1 else 0 fi
-        return check\n\n`;
+        h = sha256(input1, h)
+    endfor
+    field[128] h0 = h[0..128]
+    field[128] h1 = h[128..256]
+    field c0 = pack128(h0)
+    field c1 = pack128(h1)
+    field check = if c0==commitment[0] && c1==commitment[1] then 1 else 0 fi
+    return check\n\n`;
     }
 
     getIncludeString(){

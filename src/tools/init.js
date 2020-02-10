@@ -3,13 +3,16 @@ const path = require('path');
 const exec_command = require('../offchain/helpers/exec_command');
 const template_dir = path.resolve(__dirname+'/../templates');
 
-module.exports = async function(config, proj_name, nb_priv_inputs='1', nb_pub_inputs='1', ...args){
+module.exports = async function(config, proj_name, commitment_scheme='merkle', nb_priv_inputs='1', nb_pub_inputs='1', ...args){
     const config_path = './offchainer_config.json'
     if (!args.includes('--force') && fs.existsSync(config_path)){
         throw `Already initiated (init ${proj_name} --force to overwrite)`;
     }
     if(!proj_name){
         throw "You need to provide a name"
+    }
+    if(commitment_scheme !== 'merkle' || commitment_scheme !== 'chain'){
+        throw `Commitment scheme needs to be merkle or chain, received ${commitment_scheme}`;
     }
     const src_dir = './src';
     fs.mkdirSync(src_dir, { recursive: true });
@@ -32,6 +35,9 @@ module.exports = async function(config, proj_name, nb_priv_inputs='1', nb_pub_in
     await setTemplateValue(src_dir+`/${proj_name}_onchain.sol`, nb_priv_template, nb_priv_inputs);
     await setTemplateValue(src_dir+`/${proj_name}_offchain.zok`, nb_priv_template, nb_priv_inputs);
     await setTemplateValue(config_path, nb_priv_template, nb_priv_inputs);
+    
+    let commitment_scheme_template = "__COMMITMENT_SCHEME__";
+    await setTemplateValue(config_path, commitment_scheme_template, commtiment_scheme);
 }
 
 function copyTemplate(source, destination){

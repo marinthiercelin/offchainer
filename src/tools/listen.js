@@ -1,10 +1,20 @@
 const fs = require('fs');
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
-const commitment_scheme = require('../offchain/commitment/MerkleTreeCommitment');
+const MerkleTreeCommitment = require('../offchain/commitment/MerkleTreeCommitment');
+const HashChainCommitment = require('../offchain/commitment/HashChainCommitment');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
 const HolderListener = require('../offchain/holder/HolderListener');
+
 module.exports = async function(config, account, password, instance_pub_path, instance_key_path){
+    let commitment_scheme;
+    if(config.commitment_scheme === 'merkle'){
+        commitment_scheme = new MerkleTreeCommitment();
+    }else if(config.commitment_scheme === 'chain'){
+        commitment_scheme = new HashChainCommitment();
+    }else{
+        throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be merkle or chain`;
+    }
     var setup_values = config.setup_values;
     const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));
     const instance_key = JSON.parse(fs.readFileSync(instance_key_path));
@@ -12,7 +22,7 @@ module.exports = async function(config, account, password, instance_pub_path, in
     let zokratesSetup = new ZokratesSetup(config, setup_values);
     let commitment_pair = {commitment: instance_pub.commitment, key: instance_key.key};
     let secret_inputs = instance_key.secret_inputs.map(BigInt);
-    let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, new commitment_scheme(), commitment_pair=commitment_pair);
+    let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme, commitment_pair=commitment_pair);
     let holder = new HolderListener(config, suite);
     let holder_contract = await solidity_compiler.getCompiledContract(
         true,
