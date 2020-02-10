@@ -1,5 +1,5 @@
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
-const commitment_scheme = require('../offchain/commitment/HashBasedCommitment');
+const commitment_scheme = require('../offchain/commitment/MerkleTreeCommitment');
 const ContractDeployer = require('../offchain/helpers/ContractDeployer');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
@@ -32,7 +32,7 @@ module.exports = async function(config, account, password, requester_value, secr
         let verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin);
         setup_values = {...setup_values, verifier_address:verifier_address};
         let zokratesSetup = new ZokratesSetup(config, setup_values);
-        let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme);
+        let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, new commitment_scheme());
         let holder = await solidity_compiler.getCompiledContract(
             true,
             config.holder_name, 

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
-const commitment_scheme = require('../offchain/commitment/HashBasedCommitment');
+const commitment_scheme = require('../offchain/commitment/MerkleTreeCommitment');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
 const HolderListener = require('../offchain/holder/HolderListener');
@@ -12,7 +12,7 @@ module.exports = async function(config, account, password, instance_pub_path, in
     let zokratesSetup = new ZokratesSetup(config, setup_values);
     let commitment_pair = {commitment: instance_pub.commitment, key: instance_key.key};
     let secret_inputs = instance_key.secret_inputs.map(BigInt);
-    let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme, commitment_pair=commitment_pair);
+    let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, new commitment_scheme(), commitment_pair=commitment_pair);
     let holder = new HolderListener(config, suite);
     let holder_contract = await solidity_compiler.getCompiledContract(
         true,

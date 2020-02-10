@@ -20,12 +20,6 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
         super(config, secret_inputs, commitment_scheme, commitment_pair);
         this.setup = setup;
         this.setup_values = setup.getSetupValues();
-        this._commitmentToInt();
-    }
-
-    _commitmentToInt(){
-        this.commitment_ints = this._hexToBigIntArray(this.commitment_pair.commitment, 2).map(x => x.toString());
-        this.key_ints = this._hexToBigIntArray(this.commitment_pair.key, 1).map(x => x.toString());
     }
 
     getCommitmentPair(){
@@ -33,21 +27,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
     }
 
     getHolderContractArgs(){
-        return [this.commitment_ints, this.setup_values.verifier_address];
-    }
-
-    _hexToBigIntArray(hexstr, divide_in){
-        if(hexstr[0]==='0' && hexstr[1]==='x'){
-            hexstr = hexstr.substring(2);
-        }
-        if(hexstr.length % divide_in !== 0){
-            throw "Cannot divide the hex_str equally";
-        }
-        let bigIntLen = hexstr.length/divide_in;
-        let indexes = [...Array(divide_in).keys()];
-        let substrings = indexes.map(i => '0x'+hexstr.substring(i*bigIntLen, (i+1)*bigIntLen));
-        let result = substrings.map(str => BigInt(str));
-        return result;
+        return [...this.commitment_scheme.getHolderArgs(this.commitment_pair), this.setup_values.verifier_address];
     }
 
     // make the computation and generate a proof of correctness
@@ -61,8 +41,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
                 `--abi_spec ${this.setup_values.zokrates_abi} `+
                 `-i ${this.setup_values.compiled_file} -o ${witness_file} `+
                 `-a ${this.secret_inputs.join(" ")} ${public_inputs.join(" ")} `+
-                `${key[0]} `+
-                `${comm[0]} ${comm[1]}`;
+                this.commitment_scheme.getZokratesArgs(this.commitment_pair);
         await exec_command(witness_cmd);
         let proof_file = `${tmp_dir}/proof.json`;
         let proof_cmd = 
