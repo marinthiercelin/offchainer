@@ -1,3 +1,7 @@
-def main(private field secret_input, field public_input) -> (field):
+def main(private field[10] secret_inputs, field[1] public_inputs) -> (field):
     // modify here
-    return secret_input + public_input
+    field found = 0
+    for field i in 0..10 do
+        found = if secret_inputs[i] == public_inputs[0] then 1 else found fi
+    endfor
+    return found

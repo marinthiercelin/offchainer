@@ -1,4 +1,5 @@
 pragma solidity ^0.6.1;
+pragma experimental ABIEncoderV2;
 
 abstract contract SecretRequester {
 
@@ -12,17 +13,18 @@ abstract contract SecretRequester {
         _;
     }
 
-    function callback(uint256 id, uint256 input, uint256 output) public isFromHolder(){
-        handleAnswer(id, input, output);
+    function callback(uint256 id, uint128[1] memory f_inputs, uint128 output) public isFromHolder(){
+        end(id, f_inputs, output);
     }
-    function handleAnswer(uint256 id, uint256 input, uint256 output) internal virtual;
+
+    function end(uint256 id, uint128[1] memory f_inputs, uint128 output) internal virtual;
 }
 
 abstract contract SecretHolder {
 
     SecretRequester public requester;
     bool is_registered;
-    uint private id_counter;
+    uint256 private id_counter;
 
     constructor() public{
         id_counter = 0;
@@ -38,55 +40,92 @@ abstract contract SecretHolder {
         require(msg.sender == address(requester), "Request from unkown requester");
         _;
     }
-    function requestComputation(uint256 input)
+    function requestComputation(uint128[1] memory f_inputs)
         public
         payable
         isFromRequester()
     returns (uint256){
         uint256 id = id_counter;
         id_counter++;
-        makeComputation(id, input);
+        makeComputation(id, f_inputs);
         return id;
     }
-    function makeComputation(uint256 id, uint256 input) internal virtual;
+    function makeComputation(uint256 id, uint128[1] memory f_inputs) internal virtual;
 }
 
-abstract contract OnChainSecretHolder is SecretHolder {
-    uint private secret;
-    constructor(uint256 secret_value) public {
-        secret = secret_value;
-    }
-    function makeComputation(uint256 id, uint256 input) internal override{
-        uint output = computation(secret, input);
-        requester.callback(id, input, output);
-    }
-    function computation(uint256 secret_input, uint256 input) internal virtual returns (uint256);
-}
+
 
 abstract contract OffChainSecretHolder is SecretHolder {
     struct request {
-        uint256 input;
+        uint128[1] inputs;
         uint256 reward;
         bool active;
     }
-    mapping(uint256 => request) private requests;
-    event NewRequest(uint256 id, uint256 input, uint256 reward);
-    event NewAnswer(uint256 id, uint256 input, uint256 output);
+    mapping(uint256 => request) internal requests;
+    event NewRequest(uint256 id, uint128[1] inputs, uint256 reward);
+    event NewAnswer(uint256 id, uint128[1] inputs, uint128 output);
 
-    function makeComputation(uint256 id, uint256 input) internal override{
-        requests[id] = request(input, msg.value, true);
-        emit NewRequest(id, input, msg.value);
+    function makeComputation(uint256 id, uint128[1] memory f_inputs) internal override{
+        requests[id] = request(f_inputs, msg.value, true);
+        emit NewRequest(id, f_inputs, msg.value);
     }
 
-    function answerRequest(uint256 id, uint256 output, bytes memory proof) public{
+    modifier needsAnswer(uint256 id){
         require(requests[id].active, "The answer wasn't needed");
-        bool check = verifyProof(requests[id].input, output, proof);
+        _;
+    }
+
+    function afterCheck(uint256 id, uint128 output, bool check) internal {
         require(check, "The proof was incorrect");
-        emit NewAnswer(id, requests[id].input, output);
+        emit NewAnswer(id, requests[id].inputs, output);
         requests[id].active = false;
         msg.sender.transfer(requests[id].reward);
-        requester.callback(id, requests[id].input, output);
+        requester.callback(id, requests[id].inputs, output);
+    }
+}
+
+interface VerifierContract{
+    function verifyTx(
+        uint[2] calldata a,
+        uint[2][2] calldata b,
+        uint[2] calldata c,
+        uint[1+3] calldata inputs
+    ) external returns (bool r);
+}
+
+contract ZokratesHolder is OffChainSecretHolder {
+
+    uint128[2] public commitment;
+    VerifierContract public verifier_contract;
+
+    constructor(uint128[2] memory commitment_value, address verifier_contract_address) public{
+        commitment = commitment_value;
+        verifier_contract = VerifierContract(verifier_contract_address);
     }
 
-    function verifyProof(uint256 input, uint256 output, bytes memory proof) virtual internal returns (bool);
+    struct Proof{
+        uint256[2] a;
+        uint256[2][2] b;
+        uint[2] c;
+    }
+
+    function answerRequest(uint256 id, uint128 output, Proof memory proof) public needsAnswer(id){
+        bool check = verifyProof(requests[id].inputs, output, proof);
+        afterCheck(id, output, check);
+    }
+
+    // We always return true, hence the computation is unverified
+    function verifyProof(uint128[1] memory f_inputs, uint128 output, Proof memory proof) internal returns (bool){
+        uint256[1+3] memory verifier_inputs;
+        for(uint i = 0; i < 1; i++){
+            verifier_inputs[i] = f_inputs[i];
+        }
+        verifier_inputs[1] = commitment[0];
+        verifier_inputs[1+1] = commitment[1];
+        verifier_inputs[1+2] = output;
+        bool check = verifier_contract.verifyTx(proof.a, proof.b, proof.c, verifier_inputs);
+        return check;
+    }
+
+
 }

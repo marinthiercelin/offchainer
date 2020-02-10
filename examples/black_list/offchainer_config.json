@@ -21,7 +21,7 @@
         "value": 0
     },
     "proj_name":"black_list",
-    "holder_name":"black_listHolder",
+    "holder_name":"ZokratesHolder",
     "requester_name":"black_listRequester",
     "onchain_file":"./src/black_list_onchain.sol",
     "setup_values":{
@@ -34,5 +34,8 @@
         "verifier_contract":"./build/verifier.sol",
         "zokrates_abi":"./build/abi.json"
     },
-    "instances_dir":"./instances"
+    "instances_dir":"./instances",
+    "nb_pub_inputs": 1,
+    "nb_priv_inputs": 10,
+    "commitment_scheme": "chain"
 }
