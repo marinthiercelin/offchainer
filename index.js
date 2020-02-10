@@ -2,13 +2,13 @@ const init = require('./src/tools/init');
 const setup = require('./src/tools/setup');
 const deploy = require('./src/tools/deploy');
 const listen = require('./src/tools/listen');
+const call = require('./src/tools/call');
 
-
-module.exports.init = init;
-module.exports.setup = setup;
-module.exports.deploy = deploy;
-module.exports.listen = listen;
-module.exports.call = require('./src/tools/call');
+module.exports.init = init.functionality;
+module.exports.setup = setup.functionality;
+module.exports.deploy = deploy.functionality;
+module.exports.listen = listen.functionality;
+module.exports.call = call.functionality;
 
 function breakDownList(arg){
     var list_reg = /^(?:\s*\[([^\]]*)\]\s*)$/;
