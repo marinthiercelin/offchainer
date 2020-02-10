@@ -13,18 +13,18 @@ abstract contract SecretRequester {
         _;
     }
 
-    function callback(uint256 id, uint256[__NB_PUB_INPUTS__] memory f_inputs, uint256 output) public isFromHolder(){
+    function callback(uint256 id, uint128[__NB_PUB_INPUTS__] memory f_inputs, uint128 output) public isFromHolder(){
         end(id, f_inputs, output);
     }
 
-    function end(uint256 id, uint256[__NB_PUB_INPUTS__] memory f_inputs, uint256 output) internal virtual;
+    function end(uint256 id, uint128[__NB_PUB_INPUTS__] memory f_inputs, uint128 output) internal virtual;
 }
 
 abstract contract SecretHolder {
 
     SecretRequester public requester;
     bool is_registered;
-    uint private id_counter;
+    uint256 private id_counter;
 
     constructor() public{
         id_counter = 0;
@@ -40,7 +40,7 @@ abstract contract SecretHolder {
         require(msg.sender == address(requester), "Request from unkown requester");
         _;
     }
-    function requestComputation(uint256[__NB_PUB_INPUTS__] memory f_inputs)
+    function requestComputation(uint128[__NB_PUB_INPUTS__] memory f_inputs)
         public
         payable
         isFromRequester()
@@ -50,22 +50,22 @@ abstract contract SecretHolder {
         makeComputation(id, f_inputs);
         return id;
     }
-    function makeComputation(uint256 id, uint256[__NB_PUB_INPUTS__] memory f_inputs) internal virtual;
+    function makeComputation(uint256 id, uint128[__NB_PUB_INPUTS__] memory f_inputs) internal virtual;
 }
 
 
 
 abstract contract OffChainSecretHolder is SecretHolder {
     struct request {
-        uint256[__NB_PUB_INPUTS__] inputs;
+        uint128[__NB_PUB_INPUTS__] inputs;
         uint256 reward;
         bool active;
     }
     mapping(uint256 => request) internal requests;
-    event NewRequest(uint256 id, uint256[__NB_PUB_INPUTS__] inputs, uint256 reward);
-    event NewAnswer(uint256 id, uint256[__NB_PUB_INPUTS__] inputs, uint256 output);
+    event NewRequest(uint256 id, uint128[__NB_PUB_INPUTS__] inputs, uint256 reward);
+    event NewAnswer(uint256 id, uint128[__NB_PUB_INPUTS__] inputs, uint128 output);
 
-    function makeComputation(uint256 id, uint256[__NB_PUB_INPUTS__] memory f_inputs) internal override{
+    function makeComputation(uint256 id, uint128[__NB_PUB_INPUTS__] memory f_inputs) internal override{
         requests[id] = request(f_inputs, msg.value, true);
         emit NewRequest(id, f_inputs, msg.value);
     }
@@ -75,7 +75,7 @@ abstract contract OffChainSecretHolder is SecretHolder {
         _;
     }
 
-    function afterCheck(uint256 id, uint256 output, bool check) internal {
+    function afterCheck(uint256 id, uint128 output, bool check) internal {
         require(check, "The proof was incorrect");
         emit NewAnswer(id, requests[id].inputs, output);
         requests[id].active = false;
@@ -95,10 +95,10 @@ interface VerifierContract{
 
 contract ZokratesHolder is OffChainSecretHolder {
 
-    uint256[2] public commitment;
+    uint128[2] public commitment;
     VerifierContract public verifier_contract;
 
-    constructor(uint256[2] memory commitment_value, address verifier_contract_address) public{
+    constructor(uint128[2] memory commitment_value, address verifier_contract_address) public{
         commitment = commitment_value;
         verifier_contract = VerifierContract(verifier_contract_address);
     }
@@ -109,13 +109,13 @@ contract ZokratesHolder is OffChainSecretHolder {
         uint[2] c;
     }
 
-    function answerRequest(uint256 id, uint256 output, Proof memory proof) public needsAnswer(id){
+    function answerRequest(uint256 id, uint128 output, Proof memory proof) public needsAnswer(id){
         bool check = verifyProof(requests[id].inputs, output, proof);
         afterCheck(id, output, check);
     }
 
     // We always return true, hence the computation is unverified
-    function verifyProof(uint[__NB_PUB_INPUTS__] memory f_inputs, uint output, Proof memory proof) internal returns (bool){
+    function verifyProof(uint128[__NB_PUB_INPUTS__] memory f_inputs, uint128 output, Proof memory proof) internal returns (bool){
         uint256[__NB_PUB_INPUTS__+3] memory verifier_inputs;
         for(uint i = 0; i < __NB_PUB_INPUTS__; i++){
             verifier_inputs[i] = f_inputs[i];

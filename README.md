@@ -52,13 +52,13 @@ You can configure the project by modifying `./src/config.json`
 
 Generate the SNARKS keys:
 
-run `nodejs offchainer generate`
+run `nodejs offchainer setup`
 
 or use as a nodejs module: 
 ```js 
 const offchainer = require('offchainer');
 const config = require('./config.json');
-offchainer.generate(config);
+offchainer.setup(config);
 ```
 The owner can deploy the contracts with: 
 

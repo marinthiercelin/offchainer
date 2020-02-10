@@ -1,11 +1,11 @@
 const init = require('./src/tools/init');
-const generate = require('./src/tools/generate');
+const setup = require('./src/tools/setup');
 const deploy = require('./src/tools/deploy');
 const listen = require('./src/tools/listen');
 
 
 module.exports.init = init;
-module.exports.generate = generate;
+module.exports.setup = setup;
 module.exports.deploy = deploy;
 module.exports.listen = listen;
 module.exports.call = require('./src/tools/call');
