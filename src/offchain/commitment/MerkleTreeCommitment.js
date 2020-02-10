@@ -115,9 +115,9 @@ def main(private field[${nb_private_inputs}] secret_inputs, field[${nb_public_in
     getCheckCommitString(nb_private_inputs) {
         let extended_len = extendedLen(nb_private_inputs);
         let extensionStr = extended_len != nb_private_inputs ? `\n
-def extendInput(private field[${nb_private_inputs}] secret_inputs) -> (field[4]):
-    field[4] result = [0;4]
-    for field i in 0..3 do
+def extendInput(private field[${nb_private_inputs}] secret_inputs) -> (field[${extended_len}]):
+    field[${extended_len}] result = [0;${extended_len}]
+    for field i in 0..${nb_private_inputs} do
         result[i] = secret_inputs[i]
     endfor
     return result\n` : '\n';
