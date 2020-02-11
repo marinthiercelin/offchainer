@@ -1,0 +1,6 @@
+[submodule "dependencies/zokrates_pycrypto"]
+	path = dependencies/zokrates_pycrypto
+	url = git@github.com:Zokrates/pycrypto.git
+[submodule "dependencies/Zokrates"]
+	path = dependencies/Zokrates
+	url = git@github.com:Zokrates/Zokrates.git
