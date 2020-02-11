@@ -25,7 +25,7 @@ module.exports = class SimpleHashCommitment extends HashChainCommitment{
             sub_key = '0'.repeat(64 - sub_key.length) + sub_key;
             var value_hex = this.fromNumberTo128bitHex(value);
             var to_hash = zeros + value_hex + sub_key;
-            hash_digest = await this.hash_alg.hash(to_hash);
+            var hash_digest = await this.hash_alg.hash(to_hash);
             commitment += hash_digest;
             key += sub_key;
         }

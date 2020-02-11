@@ -1,4 +1,7 @@
 const path = require('path');
+const exec = require('../../helpers/exec_command');
+const assert = require('assert');
+
 const zokrates_pycrypto_cli = path.resolve(__dirname+'/../../../../dependencies/zokrates_pycrypto/cli.py') 
 
 module.exports = class PedersenHash {

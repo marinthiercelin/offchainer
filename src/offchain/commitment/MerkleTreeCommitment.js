@@ -10,12 +10,13 @@ function fromNumberTo256bitHex(number){
 class Leaf {
     constructor(value, hash_alg){
         this.value = value; 
+        this.hash_alg = hash_alg;
     }
     getValue(){
         return this.value;
     }
     getHash(){
-        return hash_alg.hash("0".repeat(64)+fromNumberTo256bitHex(this.value));
+        return this.hash_alg.hash("0".repeat(64)+fromNumberTo256bitHex(this.value));
     }
     toString(){
         return this.value;
@@ -40,9 +41,10 @@ class Node {
     constructor(left, right, hash_alg){
         this.left = left;
         this.right = right; 
+        this.hash_alg = hash_alg;
     }
     async getHash(){
-        return hash_alg.hash((await this.left.getHash()) + (await this.right.getHash()));
+        return this.hash_alg.hash((await this.left.getHash()) + (await this.right.getHash()));
     }
     toString(){
         return `(${this.left.toString()}:${this.right.toString()})`;
@@ -50,6 +52,7 @@ class Node {
 }
 
 function makeTree(list, hash_alg){
+    console.log(hash_alg);
     if(list.length == 0){
         return new EmptyLeaf();
     }
@@ -82,10 +85,11 @@ module.exports = class MerkleTreeCommitment extends HashChainCommitment {
     async commit(values){
         let extended = extend(values);
         var random_number = crypto.randomBytes(32);
-        let tree = makeTree(extended, this.hash);
+        let tree = makeTree(extended, this.hash_alg);
         var merkleRoot = await tree.getHash();
         var key = random_number.toString('hex');
-        var commitment = sha256(merkleRoot+key);
+        key = "0".repeat(64-key.length)+key;
+        var commitment = await this.hash_alg.hash(merkleRoot+key);
         return {commitment:'0x'+commitment, key:'0x'+key};
     }
 

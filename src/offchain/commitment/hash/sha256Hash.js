@@ -1,3 +1,6 @@
+const assert = require('assert');
+const crypto = require('crypto');
+
 module.exports = class sha256Hash {
     
     hash(hex_str){
