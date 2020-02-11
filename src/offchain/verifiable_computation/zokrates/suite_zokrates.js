@@ -16,7 +16,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
      * @param {string} zokrates_file_name the path to the zokrates computation file, without the .zok extension
      * @param {string} build_directory the path to the directory where auxiliary files are generated.
      */
-    constructor(config, setup, secret_inputs, commitment_scheme, commitment_pair=undefined){
+    constructor(config, setup, secret_inputs, commitment_scheme, commitment_pair){
         super(config, secret_inputs, commitment_scheme, commitment_pair);
         this.setup = setup;
         this.setup_values = setup.getSetupValues();
@@ -33,8 +33,6 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
     // make the computation and generate a proof of correctness
     async computeAndProve(public_inputs){
         let tmp_dir = fs.mkdtempSync(this.setup_values.setup_dir+"/tmp");
-        let key = this.key_ints;
-        let comm = this.commitment_ints;
         let witness_file = `${tmp_dir}/witness`;
         let witness_cmd = 
             `zokrates compute-witness --light `+

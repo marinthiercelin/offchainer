@@ -5,12 +5,16 @@ const template_dir = path.resolve(__dirname+'/../templates');
 const MerkleTreeCommitment = require('../offchain/commitment/MerkleTreeCommitment');
 const HashChainCommitment = require('../offchain/commitment/HashChainCommitment');
 const SimpleHashCommitment = require('../offchain/commitment/SimpleHashCommitment');
+const sha256Hash = require('../offchain/commitment/hash/sha256Hash');
+const pedersenHash = require('../offchain/commitment/hash/pedersenHash');
 
 const supported_commitments = {merkle:MerkleTreeCommitment, chain: HashChainCommitment, simple: SimpleHashCommitment};
+const supported_hash_functions = {sha256:sha256Hash, pedersen:pedersenHash};
 
 module.exports.supported_commitments = supported_commitments;
+module.exports.supported_hash_functions = supported_hash_functions
 
-module.exports.functionality = async function(config, proj_name, commitment_scheme='simple', nb_priv_inputs='1', nb_pub_inputs='1', ...args){
+module.exports.functionality = async function(config, proj_name, hash_function='sha256', commitment_scheme='simple', nb_priv_inputs='1', nb_pub_inputs='1', ...args){
     const config_path = './offchainer_config.json'
     if (!args.includes('--force') && fs.existsSync(config_path)){
         throw `Already initiated (init ${proj_name} --force to overwrite)`;
@@ -18,9 +22,13 @@ module.exports.functionality = async function(config, proj_name, commitment_sche
     if(!proj_name){
         throw "You need to provide a name"
     }
+    if(!(hash_function in supported_hash_functions)){
+        throw `Hash function needs to be [${Object.keys(supported_hash_functions).join("|")}], received ${hash_function}`;
+    }
     if(!(commitment_scheme in supported_commitments)){
         throw `Commitment scheme needs to be [${Object.keys(supported_commitments).join("|")}], received ${commitment_scheme}`;
     }
+
     const src_dir = './src';
     fs.mkdirSync(src_dir, { recursive: true });
     copyTemplate('interfaces.sol', src_dir+'/interfaces.sol');
@@ -49,6 +57,8 @@ module.exports.functionality = async function(config, proj_name, commitment_sche
     let commitment_size_template = "__COMMITMENT_SIZE__";
     await setTemplateValue(src_dir+'/interfaces.sol', commitment_size_template, supported_commitments[commitment_scheme].getCommitmentBitSize(nb_priv_inputs)/128);
 
+    let hash_function_template = "__HASH_FUNCTION__";
+    await setTemplateValue(config_path, hash_function_template, hash_function);
 }
 
 function copyTemplate(source, destination){

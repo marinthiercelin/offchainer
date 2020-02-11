@@ -1,16 +1,22 @@
 const fs = require('fs');
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
-const {supported_commitments} = require('./init');
+const {supported_commitments, supported_hash_functions} = require('./init');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
 const HolderListener = require('../offchain/holder/HolderListener');
 
 module.exports.functionality  = async function(config, account, password, instance_pub_path, instance_key_path){
+    let hash_function;
+    if(!(config.hash_function in supported_hash_functions)){
+        throw `Unknown config.hash_function ${config.hash_function}, needs to be ${Object.keys(supported_hash_functions).join("|")}`;
+    }else{
+        hash_function = new supported_hash_functions[config.hash_function]();
+    }
     let commitment_scheme;
     if(!(config.commitment_scheme in supported_commitments)){
         throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be ${Object.keys(supported_commitments).join("|")}`;
     }else{
-        commitment_scheme = new supported_commitments[config.commitment_scheme]();
+        commitment_scheme = new supported_commitments[config.commitment_scheme](hash_function);
     }
     var setup_values = config.setup_values;
     const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));
@@ -19,7 +25,7 @@ module.exports.functionality  = async function(config, account, password, instan
     let zokratesSetup = new ZokratesSetup(config, setup_values);
     let commitment_pair = {commitment: instance_pub.commitment, key: instance_key.key};
     let secret_inputs = instance_key.secret_inputs.map(BigInt);
-    let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme, commitment_pair=commitment_pair);
+    let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme, commitment_pair);
     let holder = new HolderListener(config, suite);
     let holder_contract = await solidity_compiler.getCompiledContract(
         true,

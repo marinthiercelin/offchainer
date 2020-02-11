@@ -1,5 +1,5 @@
 const solidity_compiler = require('../offchain/helpers/solidity_compiler');
-const {supported_commitments} = require('./init');
+const {supported_commitments, supported_hash_functions} = require('./init');
 const ContractDeployer = require('../offchain/helpers/ContractDeployer');
 const ZokratesSetup = require('../offchain/verifiable_computation/zokrates/setup_zokrates');
 const ZokratesSuite = require('../offchain/verifiable_computation/zokrates/suite_zokrates');
@@ -11,11 +11,17 @@ module.exports.functionality  = async function(config, account, password, reques
     if(secret_inputs.length !== config.nb_priv_inputs){
         throw `The secret inputs should be a list of size ${config.nb_priv_inputs}`
     }
+    let hash_function;
+    if(!(config.hash_function in supported_hash_functions)){
+        throw `Unknown config.hash_function ${config.hash_function}, needs to be ${Object.keys(supported_hash_functions).join("|")}`;
+    }else{
+        hash_function = new supported_hash_functions[config.hash_function]();
+    }
     let commitment_scheme;
     if(!(config.commitment_scheme in supported_commitments)){
         throw `Unknown config.commitment_scheme ${config.commitment_scheme}, needs to be ${Object.keys(supported_commitments).join("|")}`;
     }else{
-        commitment_scheme = new supported_commitments[config.commitment_scheme]();
+        commitment_scheme = new supported_commitments[config.commitment_scheme](hash_function);
     }
     secret_inputs = secret_inputs.map(BigInt);
     var deploy_options = {
@@ -53,13 +59,13 @@ module.exports.functionality  = async function(config, account, password, reques
 
         setup_values = {...setup_values, verifier_address:verifier_address};
         let zokratesSetup = new ZokratesSetup(config, setup_values);
-        let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme);
+        let commitment_pair = await commitment_scheme.commit(secret_inputs);
+        let suite = new ZokratesSuite(config, zokratesSetup, secret_inputs, commitment_scheme, commitment_pair);
         let holder_address = await contractDeployer.deploy(deploy_options, holder.abi, holder.bin, suite.getHolderContractArgs());
         
         deploy_options.value = Web3.utils.toWei( requester_value, 'ether');
         let requester_address = await contractDeployer.deploy(deploy_options, requester.abi, requester.bin, [holder_address, ...requester_args]);
         
-        let commitment_pair = suite.getCommitmentPair();
         let instance_pub = {
             owner_account: account,
             verifier_address: verifier_address,

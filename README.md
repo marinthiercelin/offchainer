@@ -27,7 +27,7 @@ of zokrates and build from source
 ### Development
 In your project workspace:
 - run `npm install git+https://github.com/marinthiercelin/offchainer.git`
-- run `nodejs offchainer init <project_name> [chain|merkle] <nb_secret_inputs> <nb_public_inputs>`
+- run `nodejs offchainer init <project_name> [sha256|pedersen] [simple|chain|merkle] <nb_secret_inputs> <nb_public_inputs>`
 - write your onchain code in `./src/<project_name>_onchain.sol`
 - write your offchain code in `./src/<project_name>_offchain.zok`.
 
