@@ -1,5 +1,0 @@
-from "hashes/sha256/512bitPacked.zok" import main as sha256_hash
-
-def main(field[4] inputs) -> (field[2]):
-    hash = sha256_hash(inputs)
-    return hash

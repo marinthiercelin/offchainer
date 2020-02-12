@@ -6,3 +6,4 @@ UTC--*
 *.png
 test_network/
 examples/*/instances/
+draft/

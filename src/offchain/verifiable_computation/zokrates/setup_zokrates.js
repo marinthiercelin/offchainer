@@ -1,8 +1,6 @@
-const assert = require('assert');
 const web3Connector = require("../../web3/web3Connector");
 const fs = require('fs');
-const ContractDeployer = require('../../helpers/ContractDeployer');
-const solidity_compiler = require('../../helpers/solidity_compiler');
+
 const exec_command = require('../../helpers/exec_command');
 
 module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {

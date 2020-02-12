@@ -67,7 +67,7 @@ module.exports = class HashChainCommitment {
         let before_main = original_content.substring(0, main_start);
         let original_main = original_content.substring(main_start, main_end);
         let after_main= original_content.substring(main_end, original_content.length);
-        var hash_str = this.hash_alg.zokratesHashFunction();
+        var import_str = this.hash_alg.zokratesImport();
 
         var commit_str = this.getCheckCommitString(nb_private_inputs);
 
@@ -76,7 +76,7 @@ module.exports = class HashChainCommitment {
         let main_original_body = original_main.substring(end_of_main_def+1);
 
         let modified_main = this.getModifiedMainSignature(nb_private_inputs, nb_public_inputs) + main_original_body;
-        let modified_final_str = hash_str + before_main + commit_str + modified_main + after_main;
+        let modified_final_str = import_str + before_main + commit_str + modified_main + after_main;
         fs.writeFileSync(modified_filepath, modified_final_str);
     }
 
@@ -88,14 +88,13 @@ def main(private field[${nb_private_inputs}] secret_inputs, field[${nb_public_in
     }
 
     getCheckCommitString(nb_private_inputs) {
-        return `\n
+        let chain_str = this.hash_alg.zokratesChain(nb_private_inputs);
+        let commit_str = `\n
 def checkCommitment(private field[${nb_private_inputs}] secret_inputs, private field commitment_key, field[2] commitment) -> (field):
-    field[2] h = [0; 2]
-    for field i in 0..${nb_private_inputs} do
-        h = hash([secret_inputs[i], commitment_key, h[0], h[1]])
-    endfor
+    h = chain(secret_inputs, commitment_key)
     field check = if h[0]==commitment[0] && h[1]==commitment[1] then 1 else 0 fi
     return check\n\n`;
+        return chain_str + commit_str;
     }
 
     hexTo128bitDecimals(hexstr){

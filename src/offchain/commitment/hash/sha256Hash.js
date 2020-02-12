@@ -27,7 +27,7 @@ module.exports = class sha256Hash {
         let level = 0;
         let level_ln = length;
         let result = `\n
-def merkleTree(private field[${length}] base_values) -> (field[2]):
+def merkleTree(private field[${length}] base_values, private field[2] commitment_key) -> (field[2]):
     field[${level_ln}][2] level${level}_hash = [[0;2];${level_ln}]
     for field i in 0..${level_ln} do
         h = hash([0, 0, 0, base_values[i]])
@@ -44,8 +44,19 @@ def merkleTree(private field[${length}] base_values) -> (field[2]):
     endfor`;
         }
         result += `
+    merkle_root = hash([level${level}_hash[0][0], level${level}_hash[0][0], commitment_key[0], commitment_key[1]])
     return level${level}_hash[0]\n\n`
         return result;
+    }
+
+    zokratesChain(nb_private_inputs){
+        return `
+def chain(private field[${nb_private_inputs}] secret_inputs, private field commitment_key) -> (field[2]):
+    field[2] h = [0; 2]
+    for field i in 0..${nb_private_inputs} do
+        h = hash([secret_inputs[i], commitment_key, h[0], h[1]])
+    endfor
+    return h\n`
     }
 
 

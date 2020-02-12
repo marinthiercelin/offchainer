@@ -40,7 +40,8 @@ def main(private field[${nb_private_inputs}] secret_inputs, field[${nb_public_in
     }
 
     getCheckCommitString(nb_private_inputs) {
-        return `\n
+        var hash_str = this.hash_alg.zokratesHashFunction();
+        return hash_str+`\n
 def checkCommitment(private field[${nb_private_inputs}] secret_inputs, private field[${2*nb_private_inputs}] commitment_key, field[${2*nb_private_inputs}] commitment) -> (field):
     field check = 1
     for field i in 0..${nb_private_inputs} do

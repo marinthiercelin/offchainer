@@ -109,40 +109,14 @@ def extendInput(private field[${nb_private_inputs}] secret_inputs) -> (field[${e
         result[i] = secret_inputs[i]
     endfor
     return result\n` : '\n';
-        let extensionStr2 = extended_len != nb_private_inputs ?  `extended = extendInput(secret_inputs)\n\t merkle_root = merkleTree(extended)` : 'merkle_root = merkleTree(secret_inputs)';
-        let merkle_str = this.getMerkleString(extended_len);
+        let extensionStr2 = extended_len != nb_private_inputs ?  `extended = extendInput(secret_inputs)\n\tmerkle_root = merkleTree(extended, commitment_key)` : 'merkle_root = merkleTree(secret_inputs, commitment_key)';
+        let merkle_str = this.hash_alg.zokratesMerkleTree(extended_len);
         let commit_str = `\n
 def checkCommitment(private field[${nb_private_inputs}] secret_inputs, private field[2] commitment_key, field[2] commitment) -> (field):
     ${extensionStr2}
-    comm = hash([merkle_root[0], merkle_root[1], commitment_key[0], commitment_key[1]])
-    field check = if comm[0]==commitment[0] && comm[1]==commitment[1] then 1 else 0 fi
+    field check = if merkle_root[0]==commitment[0] && merkle_root[1]==commitment[1] then 1 else 0 fi
     return check\n\n`;
         return extensionStr + merkle_str + commit_str;
-    }
-
-    getMerkleString(length){
-        let level = 0;
-        let level_ln = length;
-        let result = `\n
-def merkleTree(private field[${length}] base_values) -> (field[2]):
-    field[${level_ln}][2] level${level}_hash = [[0;2];${level_ln}]
-    for field i in 0..${level_ln} do
-        h = hash([0, 0, 0, base_values[i]])
-        level${level}_hash[i] = h
-    endfor`;
-        while(level_ln > 1){
-            level_ln = level_ln/2;
-            level +=1;
-            result += `
-    field[${level_ln}][2] level${level}_hash = [[0;2];${level_ln}]
-    for field i in 0..${level_ln} do
-        h = hash([level${level-1}_hash[2*i][0], level${level-1}_hash[2*i][1], level${level-1}_hash[2*i+1][0], level${level-1}_hash[2*i+1][1]])
-        level${level}_hash[i] = h
-    endfor`;
-        }
-        result += `
-    return level${level}_hash[0]\n\n`
-        return result;
     }
 
     static getCommitmentBitSize(nb_private_inputs){

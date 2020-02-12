@@ -27,7 +27,7 @@
     "setup_values":{
         "setup_dir":"./build",
         "original_zokrates_file":"./src/__PROJECT_NAME___offchain.zok",
-        "modified_zokrates_file":"./build/modified.zok",
+        "modified_zokrates_file":"./build/__PROJECT_NAME___offchain_modified.zok",
         "compiled_file":"./build/compiled",
         "verification_key_file":"./build/verification.key",
         "proving_key_file":"./build/proving.key",
