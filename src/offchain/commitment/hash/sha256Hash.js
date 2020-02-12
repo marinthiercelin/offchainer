@@ -44,8 +44,8 @@ def merkleTree(private field[${length}] base_values, private field[2] commitment
     endfor`;
         }
         result += `
-    merkle_root = hash([level${level}_hash[0][0], level${level}_hash[0][0], commitment_key[0], commitment_key[1]])
-    return level${level}_hash[0]\n\n`
+    merkle_root = hash([level${level}_hash[0][0], level${level}_hash[0][1], commitment_key[0], commitment_key[1]])
+    return merkle_root\n\n`
         return result;
     }
 

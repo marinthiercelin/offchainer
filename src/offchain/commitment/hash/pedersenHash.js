@@ -84,7 +84,7 @@ def merkleTree(private field[${length}] base_values, private field[2] commitment
         to512[i] = level${level}_hash[0][i]
         to512[128+i] = level${level}_hash[0][128+i]
         to512[256+i] = key128_0[i] 
-        to512[384+i] = key128_0[i]
+        to512[384+i] = key128_1[i]
     endfor
     comm = pedersen_hash(to512)
     result = field256ToField2(comm)
@@ -138,7 +138,7 @@ def chain(private field[${nb_private_inputs}] secret_inputs, private field commi
     for field i in 0..${nb_private_inputs} do
         input128 = unpack128(secret_inputs[i])
         for field i in 0..128 do
-            to_hash[i] = key128[i]
+            to_hash[i] = input128[i]
             to_hash[256+i] = h[i]
             to_hash[384+i] = h[128+i]
         endfor
