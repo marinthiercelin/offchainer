@@ -52,7 +52,6 @@ class Node {
 }
 
 function makeTree(list, hash_alg){
-    console.log(hash_alg);
     if(list.length == 0){
         return new EmptyLeaf();
     }
