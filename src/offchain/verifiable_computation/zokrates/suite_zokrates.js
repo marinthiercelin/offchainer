@@ -46,6 +46,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
             `zokrates generate-proof `+
                 `-i ${this.setup_values.compiled_file} `+
                 `-w ${witness_file} `+
+                `-s ${this.config.proving_scheme} `+
                 `-p ${this.setup_values.proving_key_file} `+
                 `-j ${proof_file}`;
         await exec_command(proof_cmd);

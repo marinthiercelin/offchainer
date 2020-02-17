@@ -20,18 +20,19 @@ module.exports = class ContractDeployer extends web3Connector.web3ConnectedClass
     /**
      * 
      * @param {{from:string, password:string, unlockDuration:int, gas:Number, gasPrice:Number, value:Number}} deploy_options 
-     * @param {Object} holder_contract_abi 
-     * @param {string} holder_contract_bin 
+     * @param {Object} contract_abi 
+     * @param {string} contract_bin 
      * @param {Object} deploy_args 
      */
-    async deploy(deploy_options, holder_contract_abi, holder_contract_bin, deploy_args){
+    async deploy(deploy_options, contract_abi, contract_bin, deploy_args){
         this._connectWeb3Ws();
-        let contractObject = new this.web3.eth.Contract(holder_contract_abi);
-        if(holder_contract_bin.length < 2 || holder_contract_bin[0]!=="0" || holder_contract_bin[1]!=="x"){
-            holder_contract_bin = "0x"+holder_contract_bin;
+        let contractObject = new this.web3.eth.Contract(contract_abi);
+        if(contract_bin.length < 2 || contract_bin[0]!=="0" || contract_bin[1]!=="x"){
+            contract_bin = "0x"+contract_bin;
         }
+        console.log(contract_bin);
         let deploymentTx = contractObject.deploy({
-            data:holder_contract_bin, 
+            data:contract_bin, 
             arguments: deploy_args
         });
         await this.web3.eth.personal.unlockAccount(deploy_options.account, deploy_options.password, deploy_options.unlockDuration);
@@ -46,4 +47,7 @@ module.exports = class ContractDeployer extends web3Connector.web3ConnectedClass
         return this.contract.options.address;
     }
 
+    async link(contract_name, library_name, address){
+        
+    }
 }

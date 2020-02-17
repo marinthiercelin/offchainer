@@ -27,7 +27,7 @@
     "setup_values":{
         "setup_dir":"./build",
         "original_zokrates_file":"./src/__PROJECT_NAME___offchain.zok",
-        "modified_zokrates_file":"./build/modified.zok",
+        "modified_zokrates_file":"./build/__PROJECT_NAME___offchain_modified.zok",
         "compiled_file":"./build/compiled",
         "verification_key_file":"./build/verification.key",
         "proving_key_file":"./build/proving.key",
@@ -38,5 +38,6 @@
     "nb_pub_inputs": __NB_PUB_INPUTS__,
     "nb_priv_inputs": __NB_PRIV_INPUTS__,
     "commitment_scheme": "__COMMITMENT_SCHEME__",
-    "hash_function": "__HASH_FUNCTION__"
+    "hash_function": "__HASH_FUNCTION__",
+    "proving_scheme":"gm17"
 }
