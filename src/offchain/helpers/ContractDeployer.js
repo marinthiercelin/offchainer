@@ -30,7 +30,6 @@ module.exports = class ContractDeployer extends web3Connector.web3ConnectedClass
         if(contract_bin.length < 2 || contract_bin[0]!=="0" || contract_bin[1]!=="x"){
             contract_bin = "0x"+contract_bin;
         }
-        console.log(contract_bin);
         let deploymentTx = contractObject.deploy({
             data:contract_bin, 
             arguments: deploy_args
@@ -45,9 +44,5 @@ module.exports = class ContractDeployer extends web3Connector.web3ConnectedClass
         this.deployed = true;
         this.config.verbose && console.log("Contract deployed");
         return this.contract.options.address;
-    }
-
-    async link(contract_name, library_name, address){
-        
     }
 }

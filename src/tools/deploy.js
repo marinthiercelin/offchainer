@@ -34,14 +34,24 @@ module.exports.functionality  = async function(config, account, password, reques
         if (!fs.existsSync(setup_values.setup_dir)){
             fs.mkdirSync(setup_values.setup_dir, {recursive:true});
         }
-        
-        let verifier = await solidity_compiler.getCompiledContract(
+        let BN256G2 = await solidity_compiler.getCompiledContract(
             true,
+            'BN256G2', 
+            setup_values.verifier_contract, 
+            setup_values.setup_dir,
+
+        );
+        var contractDeployer = new ContractDeployer(config);
+        let library_address = await contractDeployer.deploy(deploy_options, BN256G2.abi, BN256G2.bin);
+
+        let verifier = await solidity_compiler.getCompiledContract(
+            false,
             'Verifier', 
             setup_values.verifier_contract, 
             setup_values.setup_dir,
-            ['BN256G2.bin']
+            [{name:setup_values.verifier_contract+':BN256G2', address: library_address}]
         );
+        
         let holder = await solidity_compiler.getCompiledContract(
             true,
             config.holder_name, 
@@ -55,7 +65,6 @@ module.exports.functionality  = async function(config, account, password, reques
             setup_values.setup_dir
         );
 
-        var contractDeployer = new ContractDeployer(config);
         let verifier_address = await contractDeployer.deploy(deploy_options, verifier.abi, verifier.bin);
 
         setup_values = {...setup_values, verifier_address:verifier_address};
@@ -69,11 +78,13 @@ module.exports.functionality  = async function(config, account, password, reques
         
         let instance_pub = {
             owner_account: account,
+            library_address: library_address,
             verifier_address: verifier_address,
             holder_address: holder_address,
             requester_address: requester_address,
             commitment: commitment_pair.commitment,
         };
+        
         let instance_key = {
             secret_inputs: secret_inputs.map(x => '0x'+x.toString(16)),
             key: commitment_pair.key,
