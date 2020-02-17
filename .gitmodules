@@ -4,3 +4,9 @@
 [submodule "dependencies/Zokrates"]
 	path = dependencies/Zokrates
 	url = git@github.com:Zokrates/Zokrates.git
+[submodule "dependencies/solidity"]
+	path = dependencies/solidity
+	url = git@github.com:ethereum/solidity.git
+[submodule "dependencies/libsnark"]
+	path = dependencies/libsnark
+	url = git@github.com:scipr-lab/libsnark

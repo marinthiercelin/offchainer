@@ -1,1 +1,0 @@
-echo "HERE IS THE POSTINSTALL";

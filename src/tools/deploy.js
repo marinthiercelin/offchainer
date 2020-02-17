@@ -8,7 +8,7 @@ const path = require('path');
 const Web3 = require('web3');
 
 module.exports.functionality  = async function(config, account, password, requester_value, secret_inputs, ...requester_args){
-    if(secret_inputs.length !== config.nb_priv_inputs){
+    if(typeof secret_inputs === "undefined" || secret_inputs.length !== config.nb_priv_inputs){
         throw `The secret inputs should be a list of size ${config.nb_priv_inputs}`
     }
     let hash_function;
@@ -39,7 +39,8 @@ module.exports.functionality  = async function(config, account, password, reques
             true,
             'Verifier', 
             setup_values.verifier_contract, 
-            setup_values.setup_dir
+            setup_values.setup_dir,
+            ['BN256G2.bin']
         );
         let holder = await solidity_compiler.getCompiledContract(
             true,

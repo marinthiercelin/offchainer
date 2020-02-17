@@ -1,10 +1,9 @@
 const fs = require('fs');
 const AbstractSuiteWithCommitment = require('../AbstractSuiteWithCommitment');
-const Web3 = require('web3');
 const exec_command = require('../../helpers/exec_command');
 const Path = require('path');
 
-
+const zokrates_path = Path.resolve(__dirname+'/../../../../dependencies/Zokrates/target/release/zokrates');
 /**
  * Class that uses the Zokrates library 
  * to make verifiable computations.
@@ -35,7 +34,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
         let tmp_dir = fs.mkdtempSync(this.setup_values.setup_dir+"/tmp");
         let witness_file = `${tmp_dir}/witness`;
         let witness_cmd = 
-            `zokrates compute-witness --light `+
+            `${zokrates_path} compute-witness --light `+
                 `--abi_spec ${this.setup_values.zokrates_abi} `+
                 `-i ${this.setup_values.compiled_file} -o ${witness_file} `+
                 `-a ${this.secret_inputs.join(" ")} ${public_inputs.join(" ")} `+
@@ -43,7 +42,7 @@ module.exports = class ZokratesSuite extends AbstractSuiteWithCommitment {
         await exec_command(witness_cmd);
         let proof_file = `${tmp_dir}/proof.json`;
         let proof_cmd = 
-            `zokrates generate-proof `+
+            `${zokrates_path} generate-proof `+
                 `-i ${this.setup_values.compiled_file} `+
                 `-w ${witness_file} `+
                 `-s ${this.config.proving_scheme} `+
