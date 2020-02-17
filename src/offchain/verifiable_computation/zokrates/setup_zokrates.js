@@ -34,10 +34,10 @@ module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {
             let compile_cmd = `zokrates compile --light --abi_spec ${setup_values.zokrates_abi} -i ${setup_values.modified_zokrates_file} -o ${setup_values.compiled_file};`;
             await exec_command(compile_cmd);
             this.config.verbose && console.log('Computing the zkSNARKs keys');
-            let setup_cmd = `zokrates setup --light -i ${setup_values.compiled_file} -v ${setup_values.verification_key_file} -p ${setup_values.proving_key_file};`;
+            let setup_cmd = `zokrates setup --light -i ${setup_values.compiled_file} -v ${setup_values.verification_key_file} -p ${setup_values.proving_key_file} -s ${this.config.proving_scheme};`;
             await exec_command(setup_cmd);
             this.config.verbose && console.log('Generating the verifier contract');
-            let export_verifier_cmd = `zokrates export-verifier -i ${setup_values.verification_key_file} -o ${setup_values.verifier_contract}`;
+            let export_verifier_cmd = `zokrates export-verifier -i ${setup_values.verification_key_file} -o ${setup_values.verifier_contract} -s ${this.config.proving_scheme};`;
             await exec_command(export_verifier_cmd);
         }catch(e){
             console.log(e)
