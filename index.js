@@ -1,13 +1,17 @@
 const init = require('./src/tools/init');
-const setup = require('./src/tools/setup');
+const add_commitment = require('./src/tools/add_commitment');
+const keygen = require('./src/tools/keygen');
 const deploy = require('./src/tools/deploy');
 const listen = require('./src/tools/listen');
 const call = require('./src/tools/call');
 
 module.exports.init = init.functionality;
-module.exports.setup = setup.functionality;
+module.exports.keygen = keygen.functionality;
+module.exports.add_commitment = add_commitment.functionality;
 module.exports.deploy = deploy.functionality;
+module.exports.deploy2 = deploy.functionality2;
 module.exports.listen = listen.functionality;
+module.exports.listen2 = listen.functionality2;
 module.exports.call = call.functionality;
 
 function breakDownList(arg){
@@ -52,4 +56,6 @@ async function main(){
     console.log(`Choose an option in ${Object.keys(module.exports).join(", ")}`)
 }
 
-main().finally(() => {console.log("bye!"); process.exit(0);});
+if(require.main===module){
+    main().finally(() => {console.log("bye!"); process.exit(0);});
+}

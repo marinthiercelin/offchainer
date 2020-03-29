@@ -1,0 +1,8 @@
+def main(private field[2] secret_inputs, field[2] public_inputs) -> (field):
+    field count = 0
+    for field i in 0..2 do
+        for field j in 0..2 do
+            count = if secret_inputs[i] == public_inputs[j] then count + 1 else count fi
+        endfor
+    endfor
+    return count

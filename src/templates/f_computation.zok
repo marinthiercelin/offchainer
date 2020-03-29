@@ -1,10 +1,8 @@
 def main(private field[__NB_PRIV_INPUTS__] secret_inputs, field[__NB_PUB_INPUTS__] public_inputs) -> (field):
-    // modify here
-    field result = 0
+    field count = 0
     for field i in 0..__NB_PRIV_INPUTS__ do
-        result = result + secret_inputs[i] 
+        for field j in 0..__NB_PUB_INPUTS__ do
+            count = if secret_inputs[i] == public_inputs[j] then count + 1 else count fi
+        endfor
     endfor
-    for field j in 0..__NB_PUB_INPUTS__ do
-        result = result + public_inputs[j] 
-    endfor
-    return result 
+    return count

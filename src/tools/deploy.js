@@ -82,6 +82,8 @@ module.exports.functionality  = async function(config, account, password, reques
             verifier_address: verifier_address,
             holder_address: holder_address,
             requester_address: requester_address,
+            requester_abi: requester.abi,
+            holder_abi: holder.abi,
             commitment: commitment_pair.commitment,
         };
         
@@ -98,8 +100,75 @@ module.exports.functionality  = async function(config, account, password, reques
             count++;
         }
         config.verbose && console.log(`Instance Number: ${count}`);
-        fs.writeFileSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_pub.json`), JSON.stringify(instance_pub));
-        fs.writeFileSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_key.json`), JSON.stringify(instance_key));
+        let instance_pub_path = instances_dir + `/${config.proj_name}_${count}_pub.json`;
+        let instance_key_path = path.resolve(instances_dir + `/${config.proj_name}_${count}_key.json`);
+        fs.writeFileSync(path.resolve(instance_pub_path), JSON.stringify(instance_pub));
+        fs.writeFileSync(instance_key_path, JSON.stringify(instance_key));
+        return [instance_pub_path, instance_key_path];
+    }catch(e){
+        console.log(e)
+    }
+}
+
+module.exports.functionality2  = async function(config, account, password, requester_value, secret_inputs, ...requester_args){
+    let holder_args = [];
+    if(config.onchain){
+        holder_args.push(secret_inputs);
+    }
+    // console.log(holder_args);
+    secret_inputs = secret_inputs.map(BigInt);
+    var deploy_options = {
+        ...config.deploy_options,
+        account: account,
+        password: password,
+    };
+    var setup_values = config.setup_values;
+    try{
+        if (!fs.existsSync(setup_values.setup_dir)){
+            fs.mkdirSync(setup_values.setup_dir, {recursive:true});
+        }
+        var contractDeployer = new ContractDeployer(config);
+        let holder = await solidity_compiler.getCompiledContract(
+            true,
+            config.holder_name, 
+            config.onchain_file, 
+            setup_values.setup_dir
+        );
+        let requester = await solidity_compiler.getCompiledContract(
+            false,
+            config.requester_name, 
+            config.onchain_file,  
+            setup_values.setup_dir
+        );
+        let holder_address = await contractDeployer.deploy(deploy_options, holder.abi, holder.bin, holder_args);
+        deploy_options.value = Web3.utils.toWei( requester_value, 'ether');
+        let requester_address = await contractDeployer.deploy(deploy_options, requester.abi, requester.bin, [holder_address, ...requester_args]);
+        
+        let instance_pub = {
+            owner_account: account,
+            holder_address: holder_address,
+            requester_address: requester_address,
+            requester_abi: requester.abi,
+            holder_abi: holder.abi
+        };
+        
+        let instance_key = {
+            secret_inputs: secret_inputs.map(x => '0x'+x.toString(16)),
+        };
+        const instances_dir = config.instances_dir;
+        if (!fs.existsSync(instances_dir)){
+            fs.mkdirSync(instances_dir, {recursive:true});
+        }
+        var count=0;
+        while(fs.existsSync(path.resolve(instances_dir + `/${config.proj_name}_${count}_pub.json`))){
+            count++;
+        }
+        config.verbose && console.log(`Instance Number: ${count}`);
+        let instance_pub_path = instances_dir + `/${config.proj_name}_${count}_pub.json`;
+        let instance_key_path = path.resolve(instances_dir + `/${config.proj_name}_${count}_key.json`);
+        fs.writeFileSync(path.resolve(instance_pub_path), JSON.stringify(instance_pub));
+        fs.writeFileSync(instance_key_path, JSON.stringify(instance_key));
+        return [instance_pub_path, instance_key_path];
     }catch(e){
         console.log(e)
     }

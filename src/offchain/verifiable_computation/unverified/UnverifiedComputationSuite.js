@@ -12,8 +12,8 @@ module.exports = class UnverifiedComputationSuite extends AbstractSuite {
      * @param {Number} secret the input of the computation that stays secret and offchain
      * @param {(secret_input:Number, public_input:Number) => Number} computeOutput the computation to run for each request
      */
-    constructor(secret, computeOutput){
-        super(secret);
+    constructor(secret_inputs, computeOutput){
+        super(secret_inputs);
         this.computeOutput = computeOutput;
     }
 
@@ -26,10 +26,10 @@ module.exports = class UnverifiedComputationSuite extends AbstractSuite {
 
     /**
      * Makes the computation and returns the output, with an empty proof
-     * @param {Number} public_input the public input of the computation.
+     * @param {Number} public_inputs the public input of the computation.
      */
-    computeAndProve(public_input){
-        return {output:this.computeOutput(this.secret, public_input), proof:[]}
+    computeAndProve(public_inputs){
+        return {output:this.computeOutput(this.secret_inputs, public_inputs)}
     }
 
 }

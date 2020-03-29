@@ -1,7 +1,7 @@
 git submodule update --init --recursive;
 cd dependencies/solidity &&
 ./scripts/install_deps.sh &&
-mkdir build &&
+mkdir build;
 cd build &&
 cmake .. && make;
 cd ../.. &&

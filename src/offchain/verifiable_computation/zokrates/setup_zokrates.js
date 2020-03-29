@@ -29,7 +29,9 @@ module.exports = class ZokratesSetup extends web3Connector.web3ConnectedClass {
         if (!fs.existsSync(setup_values.setup_dir)){
             fs.mkdirSync(setup_values.setup_dir, {recursive:true});
         }
-        commitment_scheme.addCommitmentToZokrates(setup_values.original_zokrates_file, setup_values.modified_zokrates_file);
+        if (!fs.existsSync(setup_values.key_dir)){
+            fs.mkdirSync(setup_values.key_dir, {recursive:true});
+        }
         try{
             this.config.verbose && console.log('Compiling the program to R1CS constraints');
             let compile_cmd = `export ZOKRATES_HOME=${zokrates_stdlib} && ` +

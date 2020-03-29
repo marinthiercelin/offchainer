@@ -6,15 +6,8 @@ const Web3 = require('web3');
 module.exports.functionality  = async function(config, account, password, instance_pub_path, method_name, call_value, ...call_args){
     
     const instance_pub = JSON.parse(fs.readFileSync(instance_pub_path));
-    
-    let requester_contract = await solidity_compiler.getCompiledContract(
-        true,
-        config.requester_name, 
-        config.onchain_file, 
-        config.setup_values.setup_dir
-    );
     var requesterUI = new RequesterUI(config);
-    await requesterUI.connect(instance_pub.requester_address, requester_contract.abi);
+    await requesterUI.connect(instance_pub.requester_address, instance_pub.requester_abi);
     var call_options = {
         ...config.call_options,
         block_timeout:undefined,
@@ -29,6 +22,6 @@ module.exports.functionality  = async function(config, account, password, instan
         block_timeout: call_options.block_timeout,
     };
     let output = await requesterUI.useMethodWithOffChainRequest(method_info, call_options, ...call_args);
-    console.log(output);
+    config.verbose && console.log(output);
     return output;
 }

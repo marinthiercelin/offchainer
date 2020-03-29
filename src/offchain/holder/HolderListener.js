@@ -91,10 +91,12 @@ module.exports = class HolderListener extends web3Connector.web3ConnectedClass {
                     if(this.config.verbose){
                         console.log(`Listener answers a request id: ${id} inputs: ${inputs} output: ${BigInt(verifiable_output.output).toString()}`);
                     }
+                    let answer_args = [id, verifiable_output.output]
+                    if(typeof verifiable_output.proof !== "undefined"){
+                        answer_args.push(verifiable_output.proof);
+                    }
                     let answerTx = this.contract.methods.answerRequest(
-                        id, 
-                        verifiable_output.output, 
-                        verifiable_output.proof
+                        ...answer_args
                     );
                     answerTx.send({
                         from: answer_options.account,
