@@ -52,7 +52,7 @@ You can configure the project by modifying `./src/config.json`
 
 Generate the SNARKS keys:
 
-run `nodejs offchainer setup`
+run `nodejs offchainer keygen`
 
 or use as a nodejs module: 
 ```js 
